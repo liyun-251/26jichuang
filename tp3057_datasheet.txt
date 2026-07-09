@@ -1,0 +1,931 @@
+TP3054. TP3057
+
+Enhanced Serial Interface CODEC/Filter COMBO Family
+
+                                        Literature Number: SNAS569
+                                                                                                                August 1994                      TP3054 TP3057 ``Enhanced'' Serial Interface CODEC Filter COMBO Family
+
+TP3054 TP3057
+``Enhanced'' Serial Interface
+CODEC Filter COMBO Family
+
+General Description                                                                      Features
+
+The TP3054 TP3057 family consists of m-law and A-law                                     Y Complete CODEC and filtering system (COMBO)
+monolithic PCM CODEC filters utilizing the A D and D A                                      including
+conversion architecture shown in Figure 1 and a serial PCM                                      Transmit high-pass and low-pass filtering
+interface The devices are fabricated using National's ad-                                       Receive low-pass filter with sin x x correction
+vanced double-poly CMOS process (microCMOS)                                                     Active RC noise filters
+                                                                                                m-law or A-law compatible COder and DECoder
+The encode portion of each device consists of an input gain                                     Internal precision voltage reference
+adjust amplifier an active RC pre-filter which eliminates very                                  Serial I O interface
+high frequency noise prior to entering a switched-capacitor                                     Internal auto-zero circuitry
+band-pass filter that rejects signals below 200 Hz and above
+3400 Hz Also included are auto-zero circuitry and a com-                                 Y m-law 16-pin TP3054
+panding coder which samples the filtered signal and en-                                  Y A-law 16-pin TP3057
+codes it in the companded m-law or A-law PCM format The                                  Y Designed for D3 D4 and CCITT applications
+decode portion of each device consists of an expanding                                   Y g5V operation
+decoder which reconstructs the analog signal from the                                    Y Low operating power typically 50 mW
+companded m-law or A-law code a low-pass filter which                                    Y Power-down standby mode typically 3 mW
+corrects for the sin x x response of the decoder output and                              Y Automatic power-down
+rejects signals above 3400 Hz followed by a single-ended                                 Y TTL or CMOS compatible digital interfaces
+power amplifier capable of driving low impedance loads                                   Y Maximizes line interface card circuit density
+The devices require two 1 536 MHz 1 544 MHz or 2 048                                     Y Dual-In-Line or surface mount packages
+MHz transmit and receive master clocks which may be                                      Y See also AN-370 ``Techniques for Designing with
+asynchronous transmit and receive bit clocks which may
+vary from 64 kHz to 2 048 MHz and transmit and receive                                      CODEC Filter COMBO Circuits''
+frame sync pulses The timing of the frame sync pulses and
+PCM data is compatible with both industry standard formats
+
+Connection Diagrams
+
+Dual-In-Line Package                                                                     Plastic Chip Carriers
+
+                                 TL H 5510 ­ 1
+
+Top View
+
+Order Number TP3054J or TP3057J                                                                                 TL H 5510 ­ 10
+   See NS Package Number J16A
+                                                                                         Top View
+
+Order Number TP3054N or TP3057N                                                              Order Number TP3057V
+   See NS Package Number N16A                                                            See NS Package Number V20A
+
+Order Number TP3054WM or TP3057WM
+      See NS Package Number M16B
+
+    COMBO and TRI-STATE are registered trademarks of National Semiconductor Corporation            RRD-B30M125 Printed in U S A
+C1995 National Semiconductor Corporation TL H 5510
+Block Diagram
+
+                                                     FIGURE 1                        TL H 5510 ­ 2
+
+Pin Description
+
+     Symbol      Function                                          Symbol  Function
+
+VBB          Negative power supply pin                                     should be synchronous with MCLKX for best per-
+GNDA         VBB e b5V g5%                                                 formance When MCLKR is connected continu-
+             Analog ground All signals are referenced                      ously low MCLKX is selected for all internal tim-
+             to this pin                                                   ing When MCLKR is connected continuously
+                                                                           high the device is powered down
+VFRO         Analog output of the receive power ampli-             MCLKX
+             fier                                                          Transmit master clock Must be 1 536 MHz
+                                                                   FSX     1 544 MHz or 2 048 MHz May be asynchronous
+VCC          Positive power supply pin                                     with MCLKR Best performance is realized from
+                                                                   BCLKX   synchronous operation
+             VCC e a5V g5%                                         DX
+                                                                   TSX     Transmit frame sync pulse input which enables
+FSR          Receive frame sync pulse which enables                GSX     BCLKX to shift out the PCM data on DX FSX is
+                                                                           an 8 kHz pulse train see Figures 2 and 3 for
+             BCLKR to shift PCM data into DR FSR is                        timing details
+
+             an 8 kHz pulse train See Figures 2 and 3                      The bit clock which shifts out the PCM data on
+                                                                           DX May vary from 64 kHz to 2 048 MHz but
+             for timing details                                            must be synchronous with MCLKX
+
+DR           Receive data input PCM data is shifted                        The TRI-STATE PCM data output which is en-
+                                                                           abled by FSX
+             into DR following the FSR leading edge
+                                                                           Open drain output which pulses low during the
+BCLKR CLKSEL The bit clock which shifts data into DR af-                   encoder time slot
+                        ter the FSR leading edge May vary from
+                        64 kHz to 2 048 MHz Alternatively may              Analog output of the transmit input amplifier
+                                                                           Used to externally set gain
+             be a logic input which selects either
+
+             1 536 MHz 1 544 MHz or 2 048 MHz for
+
+             master clock in synchronous mode and
+
+             BCLKX is used for both transmit and re-
+             ceive directions (see Table I)
+
+MCLKR PDN    Receive master clock Must be                          VFXIb   Inverting input of the transmit input amplifier
+             1 536 MHz 1 544 MHz or 2 048 MHz                      VFXIa
+             May be asynchronous with MCLKX but                            Non-inverting input of the transmit input amplifi-
+                                                                           er
+
+                                                                2
+Functional Description
+
+POWER-UP                                                            ASYNCHRONOUS OPERATION
+
+When power is first applied power-on reset circuitry initializ-     For asynchronous operation separate transmit and receive
+                                                                    clocks may be applied MCLKX and MCLKR must be
+es the COMBO and places it into a power-down state All              2 048 MHz for the TP3057 or 1 536 MHz 1 544 MHz for the
+                                                                    TP3054 and need not be synchronous For best transmis-
+non-essential circuits are deactivated and the DX and VFRO          sion performance however MCLKR should be synchronous
+outputs are put in high impedance states To power-up the            with MCLKX which is easily achieved by applying only static
+                                                                    logic levels to the MCLKR PDN pin This will automatically
+device a logical low level or clock must be applied to the          connect MCLKX to all internal MCLKR functions (see Pin
+MCLKR PDN pin and FSX and or FSR pulses must be pres-               Description) For 1 544 MHz operation the device automati-
+ent Thus 2 power-down control modes are available The               cally compensates for the 193rd clock pulse each frame
+                                                                    FSX starts each encoding cycle and must be synchronous
+first is to pull the MCLKR PDN pin high the alternative is to       with MCLKX and BCLKX FSR starts each decoding cycle
+hold both FSX and FSR inputs continuously low the device            and must be synchronous with BCLKR BCLKR must be a
+will power-down approximately 1 ms after the last FSX or            clock the logic levels shown in Table 1 are not valid in
+FSR pulse Power-up will occur on the first FSX or FSR               asynchronous mode BCLKX and BCLKR may operate from
+pulse The TRI-STATE PCM data output DX will remain in               64 kHz to 2 048 MHz
+the high impedance state until the second FSX pulse
+                                                                    SHORT FRAME SYNC OPERATION
+SYNCHRONOUS OPERATION
+                                                                    The COMBO can utilize either a short frame sync pulse or a
+For synchronous operation the same master clock and bit             long frame sync pulse Upon power initialization the device
+                                                                    assumes a short frame mode In this mode both frame sync
+clock should be used for both the transmit and receive di-          pulses FSX and FSR must be one bit clock period long
+                                                                    with timing relationships specified in Figure 2 With FSX high
+rections In this mode a clock must be applied to MCLKX              during a falling edge of BCLKX the next rising edge of
+and the MCLKR PDN pin can be used as a power-down                   BCLKX enables the DX TRI-STATE output buffer which will
+control A low level on MCLKR PDN powers up the device               output the sign bit The following seven rising edges clock
+and a high level powers down the device In either case              out the remaining seven bits and the next falling edge dis-
+                                                                    ables the DX output With FSR high during a falling edge of
+MCLKX will be selected as the master clock for both the             BCLKR (BCLKX in synchronous mode) the next falling edge
+transmit and receive circuits A bit clock must also be ap-          of BCLKR latches in the sign bit The following seven falling
+                                                                    edges latch in the seven remaining bits All four devices
+plied to BCLKX and the BCLKR CLKSEL can be used to                  may utilize the short frame sync pulse in synchronous or
+select the proper internal divider for a master clock of 1 536      asynchronous operating mode
+
+MHz 1 544 MHz or 2 048 MHz For 1 544 MHz operation                  LONG FRAME SYNC OPERATION
+
+the device automatically compensates for the 193rd clock            To use the long frame mode both the frame sync pulses
+                                                                    FSX and FSR must be three or more bit clock periods long
+pulse each frame                                                    with timing relationships specified in Figure 3 Based on the
+                                                                    transmit frame sync FSX the COMBO will sense whether
+With a fixed level on the BCLKR CLKSEL pin BCLKX will be            short or long frame sync pulses are being used For 64 kHz
+selected as the bit clock for both the transmit and receive         operation the frame sync pulse must be kept low for a mini-
+                                                                    mum of 160 ns The DX TRI-STATE output buffer is enabled
+directions Table 1 indicates the frequencies of operation           with the rising edge of FSX or the rising edge of BCLKX
+                                                                    whichever comes later and the first bit clocked out is the
+which can be selected depending on the state of BCLKR               sign bit The following seven BCLKX rising edges clock out
+CLKSEL In this synchronous mode the bit clock BCLKX                 the remaining seven bits The DX output is disabled by the
+may be from 64 kHz to 2 048 MHz but must be synchro-                falling BCLKX edge following the eighth rising edge or by
+                                                                    FSX going low whichever comes later A rising edge on the
+nous with MCLKX                                                     receive frame sync pulse FSR will cause the PCM data at
+                                                                    DR to be latched in on the next eight falling edges of BCLKR
+Each FSX pulse begins the encoding cycle and the PCM                (BCLKX in synchronous mode) All four devices may utilize
+data from the previous encode cycle is shifted out of the           the long frame sync pulse in synchronous or asynchronous
+                                                                    mode
+enabled DX output on the positive edge of BCLKX After 8
+bit clock periods the TRI-STATE DX output is returned to a          In applications where the LSB bit is used for signalling with
+high impedance state With an FSR pulse PCM data is                  FSR two bit clock periods long the decoder will interpret the
+latched via the DR input on the negative edge of BCLKX (or          lost LSB as `` '' to minimize noise and distortion
+BCLKR if running) FSX and FSR must be synchronous with
+MCLKX R
+
+TABLE I Selection of Master Clock Frequencies
+
+BCLKR CLKSEL      Master Clock
+              Frequency Selected
+
+              TP3057        TP3054
+
+Clocked        2 048 MHz    1 536 MHz or
+0                            1 544 MHz
+1             1 536 MHz or   2 048 MHz
+               1 544 MHz
+               2 048 MHz    1 536 MHz or
+                             1 544 MHz
+
+                                                                 3
+Functional Description (Continued)                                  (due to encoding delay) which totals 290 ms Any offset
+                                                                    voltage due to the filters or comparator is cancelled by sign
+TRANSMIT SECTION                                                    bit integration
+
+The transmit section input is an operational amplifier with         RECEIVE SECTION
+provision for gain adjustment using two external resistors
+see Figure 4 The low noise and wide bandwidth allow gains           The receive section consists of an expanding DAC which
+in excess of 20 dB across the audio passband to be real-            drives a fifth order switched-capacitor low pass filter
+ized The op amp drives a unity-gain filter consisting of RC         clocked at 256 kHz The decoder is A-law (TP3057) or
+active pre-filter followed by an eighth order switched-ca-          m-law (TP3054) and the 5th order low pass filter corrects for
+pacitor bandpass filter clocked at 256 kHz The output of            the sin x x attenuation due to the 8 kHz sample hold The
+this filter directly drives the encoder sample-and-hold circuit     filter is then followed by a 2nd order RC active post-filter
+The A D is of companding type according to m-law                    power amplifer capable of driving a 600X load to a level of
+(TP3054) or A-law (TP3057) coding conventions A preci-              7 2 dBm The receive section is unity-gain Upon the occur-
+sion voltage reference is trimmed in manufacturing to pro-          rence of FSR the data at the DR input is clocked in on the
+vide an input overload (tMAX) of nominally 2 5V peak (see           falling edge of the next eight BCLKR (BCLKX) periods At
+table of Transmission Characteristics) The FSX frame sync           the end of the decoder time slot the decoding cycle begins
+pulse controls the sampling of the filter output and then the       and 10 ms later the decoder DAC output is updated The
+successive-approximation encoding cycle begins The 8-bit            total decoder delay is E 10 ms (decoder update) plus
+code is then loaded into a buffer and shifted out through DX        110 ms (filter delay) plus 62 5 ms ( frame) which gives
+at the next FSX pulse The total encoding delay will be ap-          approximately 180 ms
+proximately 165 ms (due to the transmit filter) plus 125 ms
+
+                                                                 4
+Absolute Maximum Ratings
+
+If Military Aerospace specified devices are required                       Voltage at any Digital Input or
+please contact the National Semiconductor Sales
+Office Distributors for availability and specifications                    Output                           VCCa0 3V to GNDAb0 3V
+
+                                                                           Operating Temperature Range         b25 C to a 125 C
+
+VCC to GNDA                                               7V               Storage Temperature Range           b65 C to a150 C
+VBB to GNDA                                             b7V
+Voltage at any Analog Input                                                Lead Temperature (Soldering 10 seconds)       300 C
+                             VCCa0 3V to VBBb0 3V
+   or Output                                                               ESD (Human Body Model)                        2000V
+
+                                                                           Latch-Up Immunity e 100 mA on any Pin
+
+Electrical Characteristics Unless otherwise noted limits printed in BOLD characters are guaranteed for VCC
+
+e 5 0V g5% VBB e b5 0V g5% TA e 0 C to 70 C by correlation with 100% electrical testing at TA e 25 C All other limits
+are assured by correlation with other production tests and or product design and characterization All signals referenced to
+
+GNDA Typicals specified at VCC e 5 0V VBB e b5 0V TA e 25 C
+
+Symbol             Parameter                                            Conditions                 Min      Typ Max Units
+
+DIGITAL INTERFACE
+
+VIL     Input Low Voltage                                                                                           06   V
+VIH     Input High Voltage
+VOL     Output Low Voltage                                                                         22                    V
+
+VOH     Output High Voltage               DX ILe3 2 mA                                             24               04   V
+                                          SIGR ILe1 0 mA                                           24
+IIL     Input Low Current                 TSX ILe3 2 mA Open Drain                                 b10              04   V
+IIH     Input High Current                                                                         b10
+IOZ     Output Current in High Impedance  DX IHeb3 2 mA                                            b10              04   V
+        State (TRI-STATE)                 SIGR IHeb1 0 mA
+                                                                                                                         V
+                                          GNDAsVINsVIL All Digital Inputs                                                V
+
+                                          VIHsVINsVCC                                                               10   mA
+
+                                          DX GNDAsVOsVCC                                                            10   mA
+
+                                                                                                                    10   mA
+
+ANALOG INTERFACE WITH TRANSMIT INPUT AMPLIFIER (ALL DEVICES)
+
+IIXA    Input Leakage Current             b2 5VsVsa2 5V VFXIa or VFXIb b200                                         200 nA
+RIXA    Input Resistance
+ROXA    Output Resistance                 b2 5VsVsa2 5V VFXIa or VFXIb                             10                    MX
+RLXA    Load Resistance
+CLXA    Load Capacitance                  Closed Loop Unity Gain                                            1       3    X
+VOXA    Output Dynamic Range
+AVXA    Voltage Gain                      GSX                                                      10                    kX
+FUXA    Unity Gain Bandwidth              GSX
+VOSXA   Offset Voltage                    GSX RLt10 kX                                                              50   pF
+VCMXA   Common-Mode Voltage               VFXIa to GSX
+CMRRXA  Common-Mode Rejection Ratio                                                 b2 8                            28   V
+
+                                                                                    5000                                 VV
+
+                                                                                                   1        2            MHz
+
+                                                                                                   b20              20   mV
+
+                                          CMRRXA l 60 dB                                           b2 5             25   V
+
+                                          DC Test                                                  60                    dB
+
+PSRRXA Power Supply Rejection Ratio       DC Test                                                  60                    dB
+
+ANALOG INTERFACE WITH RECEIVE FILTER (ALL DEVICES)
+
+RORF    Output Resistance                 Pin VFRO                                                          1       3    X
+                                          VFROe g2 5V
+RLRF    Load Resistance                                                                            600                   X
+
+CLRF    Load Capacitance                                                                                            500  pF
+
+VOSRO   Output DC Offset Voltage                                                    b200                            200 mV
+
+POWER DISSIPATION (ALL DEVICES)
+
+ICC0    Power-Down Current                No Load (Note)                                                    05 15        mA
+
+IBB0    Power-Down Current                No Load (Note)                                                    0 05 0 3     mA
+
+ICC1    Power-Up Active Current           No Load                                                           50 90        mA
+
+IBB1    Power-Up Active Current           No Load                                                           50 90        mA
+
+Note ICC0 and IBB0 are measured after first achieving a power-up state
+
+                                                                        5
+Timing Specifications Unless otherwise noted limits printed in BOLD characters are guaranteed for VCC e
+
+5 0V g5% VBB e b5 0V g5% TA e 0 C to 70 C by correlation with 100% electrical testing at TA e 25 C All other limits are
+assured by correlation with other production tests and or product design and characterization All signals referenced to GNDA
+
+Typicals specified at VCC e 5 0V VBB e b5 0V TA e 25 C All timing parameters are measured at VOH e 2 0V and VOL e
+0 7V See Definitions and Timing Conventions section for test methods information
+
+Symbol  Parameter                                    Conditions             Min    Typ     Max Units
+
+1 tPM   Frequency of Master Clocks     Depends on the Device Used and the   485     1 536    50   MHz
+                                       BCLKR CLKSEL Pin                             1 544    50   MHz
+tRM     Rise Time of Master Clock      MCLKX and MCLKR                      160    2 048   15725  MHz
+tFM     Fall Time of Master Clock      MCLKX and MCLKR                      160              50    ns
+tPB     Period of Bit Clock            MCLKX and MCLKR                      100     488      50    ns
+tRB     Rise Time of Bit Clock                                                                     ns
+tFB     Fall Time of Bit Clock         BCLKX and BCLKR                                             ns
+tWMH    Width of Master Clock High     BCLKX and BCLKR                                             ns
+tWML    Width of Master Clock Low      MCLKX and MCLKR                                             ns
+tSBFM   Set-Up Time from BCLKX High    MCLKX and MCLKR                                             ns
+        to MCLKX Falling Edge          First Bit Clock after the Leading                           ns
+tSFFM   Set-Up Time from FSX High      Edge of FSX
+        to MCLKX Falling Edge          Long Frame Only                      100                   ns
+tWBH    Width of Bit Clock High
+tWBL    Width of Bit Clock Low         VIHe2 2V                             160                   ns
+tHBFL   Holding Time from Bit Clock    VILe0 6V
+        Low to Frame Sync              Long Frame Only                      160                   ns
+
+                                                                            0                     ns
+
+tHBFS   Holding Time from Bit Clock    Short Frame Only                     0                     ns
+
+        High to Frame Sync
+
+tSFB    Set-Up Time from Frame Sync    Long Frame Only                      80                    ns
+
+        to Bit Clock Low
+
+tDBD    Delay Time from BCLKX High     Loade150 pF plus 2 LSTTL Loads       0              140    ns
+
+        to Data Valid
+
+tDBTS   Delay Time to TSX Low          Loade150 pF plus 2 LSTTL Loads                      140    ns
+
+tDZC    Delay Time from BCLKX Low to   CLe0 pF to 150 pF                    50             165    ns
+
+        Data Output Disabled
+
+tDZF    Delay Time to Valid Data from  CLe0 pF to 150 pF                    20             165    ns
+
+        FSX or BCLKX Whichever
+        Comes Later
+
+tSDB    Set-Up Time from DR Valid to                                        50                    ns
+        BCLKR X Low
+
+tHBD    Hold Time from BCLKR X Low to                                       50                    ns
+        DR Invalid
+
+tSF     Set-Up Time from FSX R to      Short Frame Sync Pulse (1 Bit Clock  50                    ns
+
+        BCLKX RLow                     Period Long)
+
+tHF     Hold Time from BCLKX R Low     Short Frame Sync Pulse (1 Bit Clock  100                   ns
+
+        to FSX R Low                   Period Long)
+
+tHBFl   Hold Time from 3rd Period of   Long Frame Sync Pulse (from 3 to 8 Bit 100                 ns
+
+        Bit Clock Low to Frame Sync    Clock Periods Long)
+
+        (FSX or FSR)
+
+tWFL    Minimum Width of the Frame     64k Bit s Operating Mode             160                   ns
+
+        Sync Pulse (Low Level)
+
+                                                     6
+                                                                                                                                                              Timing Diagrams
+
+7
+
+                                  TL H 5510 ­ 3
+
+FIGURE 2 Short Frame Sync Timing
+                                                                                                                                                              Timing Diagrams (Continued)
+
+8
+
+                                 TL H 5510 ­ 4
+
+FIGURE 3 Long Frame Sync Timing
+Transmission Characteristics Unless otherwise noted limits printed in BOLD characters are guaranteed for
+
+VCC e 5 0V g5% VBB e b5 0V g5% TA e 0 C to 70 C by correlation with 100% electrical testing at TA e 25 C All other
+limits are assured by correlation with other production tests and or product design and characterization GNDA e 0V f e
+
+1 02 kHz VIN e 0 dBm0 transmit input amplifier connected for unity gain non-inverting Typicals specified at VCC e 5 0V VBB
+e b5 0V TA e 25 C
+
+Symbol  Parameter                                    Conditions             Min    Typ     Max Units
+
+AMPLITUDE RESPONSE
+
+        Absolute Levels                   Nominal 0 dBm0 Level is 4 dBm
+        (Definition of Nominal Gain)      (600X)
+                                          0 dBm0
+                                                                                   1 2276        Vrms
+
+tMAX    Virtual Decision Valve Defined    Max Overload Level                       2 501         VPK
+GXA     Per CCITT Rec G711                   TP3054 (3 17 dBm0)
+                                             TP3057 (3 14 dBm0)                    2 492         VPK
+        Transmit Gain Absolute
+                                          TAe25 C VCCe5V VBBeb5V
+                                          Input at GSXe0 dBm0 at 1020 Hz    b0 15          0 15  dB
+                                          TP3054 57
+
+GXR     Transmit Gain Relative to GXA     fe16 Hz                                          b40   dB
+                                          fe50 Hz
+                                                                                           b30   dB
+
+                                          fe60 Hz                                          b26   dB
+
+                                          fe200 Hz                          b1 8           b0 1  dB
+
+                                          fe300 Hzb3000 Hz                  b0 15          0 15  dB
+
+                                          fe3300 Hz                         b0 35          0 05  dB
+
+                                          fe3400 Hz                         b0 7           0     dB
+
+                                          fe4000 Hz                                        b14   dB
+
+                                          fe4600 Hz and Up Measure                         b32   dB
+
+                                          Response from 0 Hz to 4000 Hz
+
+GXAT    Absolute Transmit Gain Variation  Relative to GXA                   b0 1           01    dB
+        with Temperature
+
+GXAV    Absolute Transmit Gain Variation  Relative to GXA                   b0 05          0 05  dB
+        with Supply Voltage
+
+GXRL    Transmit Gain Variations with     Sinusoidal Test Method
+        Level                             Reference Leveleb10 dBm0
+                                          VFXIa eb40 dBm0 to a3 dBm0
+                                          VFXIa eb50 dBm0 to b40 dBm0        b0 2          02    dB
+                                          VFXIa eb55 dBm0 to b50 dBm0        b0 4
+                                                                             b1 2          04    dB
+                                          TAe25 C VCCe5V VBBeb5V
+                                          InputeDigital Code Sequence for   b0 15          12    dB
+                                          0 dBm0 Signal at 1020 Hz
+GRA     Receive Gain Absolute             TP3054 57
+
+                                                                                           0 15  dB
+
+GRR     Receive Gain Relative to GRA      fe0 Hz to 3000 Hz                 b0 15          0 15  dB
+                                          fe3300 Hz                         b0 35
+                                          fe3400 Hz                          b0 7          0 05  dB
+                                          fe4000 Hz
+                                                                                           0     dB
+
+                                                                                           b14   dB
+
+GRAT    Absolute Receive Gain Variation   Relative to GRA                   b0 1           01    dB
+        with Temperature
+
+GRAV    Absolute Receive Gain Variation   Relative to GRA                   b0 05          0 05  dB
+        with Supply Voltage
+
+GRRL    Receive Gain Variations with      Sinusoidal Test Method Reference
+        Level                             Input PCM Code Corresponds to an
+                                          Ideally Encoded PCM Level
+                                                                            b0 2           02    dB
+                                             eb40 dBm0 to a3 dBm0           b0 4
+                                             eb50 dBm0 to b40 dBm0          b1 2           04    dB
+                                             eb55 dBm0 to b50 dBm0
+                                                                                           12    dB
+
+VRO     Receive Output Drive Level        RLe600X                           b2 5           25    V
+
+                                                     9
+Transmission Characteristics (Continued) Unless otherwise noted limits printed in BOLD characters are
+
+guaranteed for VCC e 5 0V g5% VBB e b5 0V g5% TA e 0 C to 70 C by correlation with 100% electrical testing at TA e
+25 C All other limits are assured by correlation with other production tests and or product design and characterization GNDA
+
+e 0V f e 1 02 kHz VIN e 0 dBm0 transmit input amplifier connected for unity gain non-inverting Typicals specified at VCC e
+5 0V VBB e b5 0V TA e 25 C
+
+Symbol            Parameter                      Conditions                Min  Typ  Max  Units
+
+ENVELOPE DELAY DISTORTION WITH FREQUENCY
+
+DXA     Transmit Delay Absolute          fe1600 Hz                              290  315  ms
+
+DXR     Transmit Delay Relative to DXA   fe500 Hz ­ 600 Hz                      195  220  ms
+
+                                         fe600 Hz ­ 800 Hz                      120  145  ms
+
+                                         fe800 Hz ­ 1000 Hz                     50   75   ms
+
+                                         fe1000 Hz ­ 1600 Hz                    20   40   ms
+
+                                         fe1600 Hz ­ 2600 Hz                    55   75   ms
+
+                                         fe2600 Hz ­ 2800 Hz                    80   105  ms
+
+                                         fe2800 Hz ­ 3000 Hz                    130  155  ms
+
+DRA     Receive Delay Absolute           fe1600 Hz                              180  200  ms
+DRR     Receive Delay Relative to DRA
+                                         fe500 Hz ­ 1000 Hz                b40 b25        ms
+                                         fe1000 Hz ­ 1600 Hz
+                                         fe1600 Hz ­ 2600 Hz               b30 b20        ms
+                                         fe2600 Hz ­ 2800 Hz
+                                         fe2800 Hz ­ 3000 Hz                    70   90   ms
+
+                                                                                100  125  ms
+
+                                                                                145  175  ms
+
+NOISE
+
+NXC     Transmit Noise C Message         TP3054                                 12   15   dBrnC0
+
+        Weighted
+
+NXP     Transmit Noise P Message         TP3057                                 b74 b67 dBm0p
+
+        Weighted
+
+NRC     Receive Noise C Message          PCM Code is Alternating Positive
+                                         and Negative Zero TP3054
+        Weighted                                                                8    11   dBrnC0
+
+NRP     Receive Noise P Message          PCM Code Equals Positive
+                                         Zero TP3057
+        Weighted                                                                b82 b79 dBm0p
+
+NRS     Noise Single Frequency           fe0 kHz to 100 kHz Loop Around              b53  dBm0
+PPSRX                                    Measurement VFXIa e0 Vrms
+        Positive Power Supply Rejection
+        Transmit                         VFXIa e b50 dBm0
+
+                                         VCCe5 0 VDCa100 mVrms
+
+                                         fe0 kHz ­ 50 kHz (Note 2)         40             dBC
+
+NPSRX   Negative Power Supply Rejection  VFXIa e b50 dBm0
+
+        Transmit                         VBBeb5 0 VDCa100 mVrms
+
+                                         fe0 kHz ­ 50 kHz (Note 2)         40             dBC
+
+PPSRR   Positive Power Supply Rejection  PCM Code Equals Positive Zero
+
+        Receive                          VCCe5 0 VDCa100 mVrms
+
+                                         Measure VFR0
+
+                                         fe0 Hz ­ 4000 Hz                  40             dBC
+
+                                         fe4 kHz ­ 25 kHz                  40             dB
+
+                                         fe25 kHz ­ 50 kHz                 36             dB
+
+NPSRR   Negative Power Supply Rejection  PCM Code Equals Positive Zero
+
+        Receive                          VBBeb5 0 VDCa100 mVrms
+
+                                         Measure VFR0
+
+                                         fe0 Hz ­ 4000 Hz                  40             dBC
+
+                                         fe4 kHz ­ 25 kHz                  40             dB
+
+                                         fe25 kHz ­ 50 kHz                 36             dB
+
+                                                 10
+Transmission Characteristics (Continued) Unless otherwise noted limits printed in BOLD characters are
+
+guaranteed for VCC e 5 0V g5% VBB e b5 0V g5% TA e 0 C to 70 C by correlation with 100% electrical testing at TA e
+25 C All other limits are assured by correlation with other production tests and or product design and characterization GNDA
+
+e 0V f e 1 02 kHz VIN e 0 dBm0 transmit input amplifier connected for unity gain non-inverting Typicals specified at VCC e
+5 0V VBB e b5 0V TA e 25 C
+
+Symbol      Parameter                          Conditions                                                         Min Typ Max Units
+
+SOS     Spurious Out-of-Band Signals   Loop Around Measurement 0 dBm0                                                 b30      dB
+        at the Channel Output          300 Hz to 3400 Hz Input PCM Code Applied
+                                       at DR
+                                                                                                                      b30      dB
+                                          4600 Hz ­ 7600 Hz
+                                          7600 Hz ­ 8400 Hz                                                           b40      dB
+                                          8400 Hz ­ 100 000 Hz
+                                                                                                                      b30      dB
+
+DISTORTION
+
+STDX    Signal to Total Distortion     Sinusoidal Test Method (Note 3)
+
+STDR    Transmit or Receive            Level e3 0 dBm0                                                            33           dBC
+
+        Half-Channel                   e0 dBm0 to b30 dBm0                                                        36           dBC
+
+                                       eb40 dBm0 XMT                                                              29           dBC
+
+                                                        RCV                                                       30           dBC
+
+                                       eb55 dBm0 XMT                                                              14           dBC
+
+                                                        RCV                                                       15           dBC
+
+SFDX    Single Frequency Distortion                                                                                   b46      dB
+        Transmit
+
+SFDR    Single Frequency Distortion                                                                                   b46      dB
+        Receive
+
+IMD     Intermodulation Distortion     Loop Around Measurement                                                        b41      dB
+                                       VFXa eb4 dBm0 to b21 dBm0 Two
+                                       Frequencies in the Range
+                                       300 Hz ­ 3400 Hz
+
+CROSSTALK
+
+CTX-R   Transmit to Receive Crosstalk  fe300 Hz ­ 3400 Hz                                                             b90 b75  dB
+CTR-X   0 dBm0 Transmit Level          DReQuiet PCM Code
+                                                                                                                      b90 b70  dB
+        Receive to Transmit Crosstalk  fe300 Hz ­ 3400 Hz VFXIeMultitone
+        0 dBm0 Receive Level           (Note 2)
+
+                                       ENCODING FORMAT AT DX OUTPUT
+
+                                       TP3054                                                   TP3057
+                                       m-Law                                                     A-Law
+                                                                                 (Includes Even Bit Inversion)
+
+VIN (at GSX)e aFull-Scale    10000000                                     10101010
+VIN (at GSX)e0V
+                             11111111                                     11010101
+                             01111111                                     01010101
+
+VIN (at GSX)ebFull-Scale     00000000                                     00101010
+
+Note 1 Measured by extrapolation from the distortion test result at b50 dBm0
+Note 2 PPSRX NPSRX and CTR-X are measured with a b50 dBm0 activation signal applied to VFXIa
+Note 3 Devices are measured using C message weighted filter for m-Law and psophometric weighted filter for A-Law
+
+                                               11
+Applications Information                                                          This common ground point should be decoupled to VCC and
+                                                                                  VBB with 10 mF capacitors
+POWER SUPPLIES
+                                                                                  RECEIVE GAIN ADJUSTMENT
+While the pins of the TP305X family are well protected
+against electrical misuse it is recommended that the stan-                        For applications where a TP305X family CODEC filter re-
+dard CMOS practice be followed ensuring that ground is                            ceive output must drive a 600X load but a peak swing lower
+connected to the device before any other connections are                          than g2 5V is required the receive gain can be easily ad-
+made In applications where the printed circuit board may be                       justed by inserting a matched T-pad or q-pad at the output
+plugged into a ``hot'' socket with power and clocks already                       Table II lists the required resistor values for 600X termina-
+present an extra long ground pin in the connector should                          tions As these are generally non-standard values the equa-
+be used                                                                           tions can be used to compute the attenuation of the closest
+                                                                                  practical set of resistors It may be necessary to use un-
+All ground connections to each device should meet at a                            equal values for the R1 or R4 arms of the attenuators to
+common point as close as possible to the GNDA pin This                            achieve a precise attenuation Generally it is tolerable to
+minimizes the interaction of ground return currents flowing                       allow a small deviation of the input impedance from nominal
+through a common bus impedance 0 1 mF supply decou-                               while still maintaining a good return loss For example a 30
+pling capacitors should be connected from this common                             dB return loss against 600X is obtained if the output imped-
+ground point to VCC and VBB as close to the device as                             ance of the attenuator is in the range 282X to 319X (as-
+possible                                                                          suming a perfect transformer)
+
+For best performance the ground point of each CODEC
+FILTER on a card should be connected to a common card
+ground in star formation rather than via a ground bus
+
+                                                   T-Pad Attenuator
+
+                                                    J  J N2 a 1                      N
+                                                   R1 e Z1 N2 b 1 b 20Z1 Z2 N2 b 1
+
+                                                            J N
+
+                                                   R2 e 20Z1 Z2 N2 b 1
+
+                                                          0 POWER IN
+
+                                                   Where N e
+                                                                       POWER OUT
+
+                                                      and
+
+                                                       0Z1
+
+                                                       Se
+                                                                Z2
+
+                                                      Also Z e 0ZSC  ZOC
+                                                   Where ZSC e impedance with short circuit termination
+                                                   and ZOC e impedance with open circuit termination
+
+                                                   q-Pad Attenuator
+
+                                                                                                         TL H 5510 ­ 5
+
+                                                   R3 e  0  J Z1 Z2 N2 b 12       N
+
+Note See Application Note 370 for further details        J N2 b 1
+
+                                                   R3 e Z1 N2 b 2NS a 1
+
+                                                             12
+Applications Information (Continued)
+
+TABLE II Attentuator Tables for Z1eZ2e300X
+                      (All Values in X)
+
+dB  R1                                R2        R3     R4
+
+01  17                                26k       35     52k
+
+02  35                                13k       69     26k
+
+03  52                                8 7k      10 4   17 4k
+
+04  69                                6 5k      13 8   13k
+
+05  85                                5 2k      17 3   10 5k
+
+06  10 4                              4 4k      21 3   8 7k
+
+07  12 1                              3 7k      24 2   7 5k
+
+08  13 8                              3 3k      27 7   6 5k
+
+09  15 5                              2 9k      31 1   5 8k
+
+10  17 3                              2 6l      34 6   5 2k
+
+2   34 4                              1 3k      70     2 6k
+
+3   51 3                              850       107    1 8k
+
+4   68                                650       144    1 3k
+
+5   84                                494       183    1 1k
+
+6   100                               402       224    900
+
+7   115                               380       269    785
+
+8   379                               284       317    698
+
+9   143                               244       370    630
+
+10  156                               211       427    527
+
+11  168                               184       490    535
+
+12  180                               161       550    500
+
+13  190                               142       635    473
+
+14  200                               125       720    450
+
+15  210                               110       816    430
+
+16  218                               98        924    413
+
+18  233                               77        1 17k  386
+
+20  246                               61        1 5k   366
+
+Typical Synchronous Application
+
+                                                                      TL H 5510 ­ 6
+
+Note 1 XMIT gaine20clog                J R1aR2R2where (R1aR2) l10 KX
+
+                                      FIGURE 4
+
+                                      13
+Connection Diagrams (Continued)
+
+                                 Plastic Chip Carrier
+
+                                                             TL H 5510 ­ 7
+
+                                                Top View
+
+                                     Order Number TP3057V
+                                 See NS Package Number V20A
+
+                                 14
+Physical Dimensions inches (millimeters)
+
+                                                               Cavity Dual-In-Line Package (J)
+                                                            Order Number TP3054J or TP3057J
+
+                                                                  NS Package Number J16A
+
+                                                           Molded Small Outline Package (WM)
+                                                        Order Number TP3054WM or TP3057WM
+
+                                                                  NS Package Number M16B
+                                                                                    15
+TP3054 TP3057 ``Enhanced'' Serial Interface CODEC Filter COMBO Family  Physical Dimensions inches (millimeters) (Continued)
+
+                                                                                                 Molded Dual-In-Line Package (N)
+                                                                                               Order Number TP3054N or TP3057N
+
+                                                                                                     NS Package Number N16A
+
+                                                                       LIFE SUPPORT POLICY
+
+                                                                       NATIONAL'S PRODUCTS ARE NOT AUTHORIZED FOR USE AS CRITICAL COMPONENTS IN LIFE SUPPORT
+                                                                       DEVICES OR SYSTEMS WITHOUT THE EXPRESS WRITTEN APPROVAL OF THE PRESIDENT OF NATIONAL
+                                                                       SEMICONDUCTOR CORPORATION As used herein
+
+                                                                       1 Life support devices or systems are devices or              2 A critical component is any component of a life
+                                                                           systems which (a) are intended for surgical implant           support device or system whose failure to perform can
+                                                                           into the body or (b) support or sustain life and whose        be reasonably expected to cause the failure of the life
+                                                                           failure to perform when properly used in accordance          support device or system or to affect its safety or
+                                                                           with instructions for use provided in the labeling can       effectiveness
+                                                                           be reasonably expected to result in a significant injury
+                                                                           to the user
+
+                                                                       National Semiconductor  National Semiconductor                 National Semiconductor     National Semiconductor
+                                                                       Corporation             Europe                                 Hong Kong Ltd              Japan Ltd
+                                                                       1111 West Bardin Road                                          13th Floor Straight Block  Tel 81-043-299-2309
+                                                                       Arlington TX 76017                  Fax (a49) 0-180-530 85 86  Ocean Centre 5 Canton Rd   Fax 81-043-299-2408
+                                                                       Tel 1(800) 272-9959              Email cnjwge tevm2 nsc com    Tsimshatsui Kowloon
+                                                                       Fax 1(800) 737-7018     Deutsch Tel (a49) 0-180-530 85 85      Hong Kong
+                                                                                               English Tel (a49) 0-180-532 78 32      Tel (852) 2737-1600
+                                                                                               Fran ais Tel (a49) 0-180-532 93 58     Fax (852) 2736-9960
+                                                                                               Italiano Tel (a49) 0-180-534 16 80
+
+                                                                       National does not assume any responsibility for use of any circuitry described no circuit patent licenses are implied and National reserves the right at any time without notice to change said circuitry and specifications
+                                                IMPORTANT NOTICE
+
+Texas Instruments Incorporated and its subsidiaries (TI) reserve the right to make corrections, modifications, enhancements, improvements,
+and other changes to its products and services at any time and to discontinue any product or service without notice. Customers should
+obtain the latest relevant information before placing orders and should verify that such information is current and complete. All products are
+sold subject to TI's terms and conditions of sale supplied at the time of order acknowledgment.
+
+TI warrants performance of its hardware products to the specifications applicable at the time of sale in accordance with TI's standard
+warranty. Testing and other quality control techniques are used to the extent TI deems necessary to support this warranty. Except where
+mandated by government requirements, testing of all parameters of each product is not necessarily performed.
+
+TI assumes no liability for applications assistance or customer product design. Customers are responsible for their products and
+applications using TI components. To minimize the risks associated with customer products and applications, customers should provide
+adequate design and operating safeguards.
+
+TI does not warrant or represent that any license, either express or implied, is granted under any TI patent right, copyright, mask work right,
+or other TI intellectual property right relating to any combination, machine, or process in which TI products or services are used. Information
+published by TI regarding third-party products or services does not constitute a license from TI to use such products or services or a
+warranty or endorsement thereof. Use of such information may require a license from a third party under the patents or other intellectual
+property of the third party, or a license from TI under the patents or other intellectual property of TI.
+
+Reproduction of TI information in TI data books or data sheets is permissible only if reproduction is without alteration and is accompanied
+by all associated warranties, conditions, limitations, and notices. Reproduction of this information with alteration is an unfair and deceptive
+business practice. TI is not responsible or liable for such altered documentation. Information of third parties may be subject to additional
+restrictions.
+
+Resale of TI products or services with statements different from or beyond the parameters stated by TI for that product or service voids all
+express and any implied warranties for the associated TI product or service and is an unfair and deceptive business practice. TI is not
+responsible or liable for any such statements.
+
+TI products are not authorized for use in safety-critical applications (such as life support) where a failure of the TI product would reasonably
+be expected to cause severe personal injury or death, unless officers of the parties have executed an agreement specifically governing
+such use. Buyers represent that they have all necessary expertise in the safety and regulatory ramifications of their applications, and
+acknowledge and agree that they are solely responsible for all legal, regulatory and safety-related requirements concerning their products
+and any use of TI products in such safety-critical applications, notwithstanding any applications-related information or support that may be
+provided by TI. Further, Buyers must fully indemnify TI and its representatives against any damages arising out of the use of TI products in
+such safety-critical applications.
+
+TI products are neither designed nor intended for use in military/aerospace applications or environments unless the TI products are
+specifically designated by TI as military-grade or "enhanced plastic." Only products designated by TI as military-grade meet military
+specifications. Buyers acknowledge and agree that any such use of TI products which TI has not designated as military-grade is solely at
+the Buyer's risk, and that they are solely responsible for compliance with all legal and regulatory requirements in connection with such use.
+
+TI products are neither designed nor intended for use in automotive applications or environments unless the specific TI products are
+designated by TI as compliant with ISO/TS 16949 requirements. Buyers acknowledge and agree that, if they use any non-designated
+products in automotive applications, TI will not be responsible for any failure to meet such requirements.
+
+Following are URLs where you can obtain information on other Texas Instruments products and application solutions:
+
+Products                                                 Applications
+Audio
+Amplifiers              www.ti.com/audio                 Communications and Telecom www.ti.com/communications
+Data Converters
+DLP® Products           amplifier.ti.com                 Computers and Peripherals www.ti.com/computers
+DSP
+Clocks and Timers       dataconverter.ti.com             Consumer Electronics  www.ti.com/consumer-apps
+Interface
+Logic                   www.dlp.com                      Energy and Lighting   www.ti.com/energy
+Power Mgmt
+Microcontrollers        dsp.ti.com                       Industrial            www.ti.com/industrial
+RFID
+OMAP Mobile Processors  www.ti.com/clocks                Medical               www.ti.com/medical
+Wireless Connectivity
+                        interface.ti.com                 Security              www.ti.com/security
+
+                        logic.ti.com                     Space, Avionics and Defense www.ti.com/space-avionics-defense
+
+                        power.ti.com                     Transportation and Automotive www.ti.com/automotive
+
+                        microcontroller.ti.com           Video and Imaging     www.ti.com/video
+
+                        www.ti-rfid.com
+
+                        www.ti.com/omap
+
+                        www.ti.com/wirelessconnectivity
+
+                                          TI E2E Community Home Page           e2e.ti.com
+
+                        Mailing Address: Texas Instruments, Post Office Box 655303, Dallas, Texas 75265
+                                             Copyright © 2011, Texas Instruments Incorporated
+
