@@ -141,7 +141,7 @@ void SETUP(void)
     SET_DPS(DPS2, 5.0, V, 100, MA);
     Delay(10);
     SET_PERIOD(488);//周期设置 2.048MHz
-    SET_TIMING(100, 350, 450);//LeadEdge比较沿(100ns)Ctg锁存沿(350ns)EndEdge终止沿(450ns)
+    SET_TIMING(122, 122, 244);//LeadEdge比较沿(100ns)Ctg锁存沿(350ns)EndEdge终止沿(450ns)
     SET_INPUT_LEVEL(2.2, 0.6);
     SET_OUTPUT_LEVEL(2.4, 0.4);
     FORMAT(NRZ0, "48,4,47,46,1,2");   /* FSR-1;DR-2;BCLKR-3;PDN-4;BCLKX-44;MCLKX-45;DX-46;FSX-47;TSX-48 */
