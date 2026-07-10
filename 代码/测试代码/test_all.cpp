@@ -532,7 +532,7 @@ void PASCAL TP3057()
 
         SETUP();
 
-        RUN_PATTERN(4, 1, 0, 0);
+        RUN_PATTERN(4, 1, 0, 0);//进入高阻态
 
         /* IOZL：对地漏电（加 0.1V 测电流） */
         PMU_CONDITIONS(FVMI, 0.1, V, 100, UA);
@@ -568,15 +568,16 @@ void PASCAL TP3057()
 
         SETUP();
 
-        RUN_PATTERN(5, 1, 0, 0);
+        
+        RUN_PATTERN(5, 1, 0, 0);//进入掉电
         Delay(50);
 
         fail = 0;
 
-        if (!DPS_MEASURE(DPS1, R20MA, 5, "ICC0", MA, 1.5, No_LoLimit)) {
+        if (!DPS_MEASURE(DPS2, R20MA, 5, "ICC0", MA, 1.5, No_LoLimit)) {//dsp2-vcc
             fail++;
         }
-        if (!DPS_MEASURE(DPS2, R2MA, 5, "IBB0", MA, 0.3, No_LoLimit)) {
+        if (!DPS_MEASURE(DPS1, R2MA, 5, "IBB0", MA, 0.3, No_LoLimit)) {//dsp1-vbb
             fail++;
         }
 
@@ -613,11 +614,11 @@ void PASCAL TP3057()
         icc1_fail = 0;
         ibb1_fail = 0;
 
-        if (!DPS_MEASURE(DPS1, R20MA, 5, "ICC1", MA, 9, No_LoLimit)) {
+        if (!DPS_MEASURE(DPS2, R20MA, 5, "ICC1", MA, 9, No_LoLimit)) {
             fail++;
             icc1_fail = 1;
         }
-        if (!DPS_MEASURE(DPS2, R20MA, 5, "IBB1", MA, 9, No_LoLimit)) {
+        if (!DPS_MEASURE(DPS1, R20MA, 5, "IBB1", MA, 9, No_LoLimit)) {
             fail++;
             ibb1_fail = 1;
         }

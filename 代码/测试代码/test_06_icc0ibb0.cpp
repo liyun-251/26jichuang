@@ -27,10 +27,10 @@ void PASCAL TP3057()
 
     fail = 0;
 
-    if (!DPS_MEASURE(DPS1, R20MA, 5, "ICC0", MA, 1.5, No_LoLimit)) {
+    if (!DPS_MEASURE(DPS2, R20MA, 5, "ICC0", MA, 1.5, No_LoLimit)) {
         fail++;
     }
-    if (!DPS_MEASURE(DPS2, R2MA, 5, "IBB0", MA, 0.3, No_LoLimit)) {
+    if (!DPS_MEASURE(DPS1, R2MA, 5, "IBB0", MA, 0.3, No_LoLimit)) {
         fail++;
     }
 
