@@ -62,6 +62,7 @@
 /* ==================== 全局变量（跨测试共享） ==================== */
 extern double gxa1020;   /* GXA 测得的 1020Hz 参考增益，供 GXR 使用 */
 extern double gra1020;   /* GRA 测得的 1020Hz 参考增益，供 GRR/GRRL 使用 */
+extern double vra_ref;   /* GRA 测得的参考电压，供 GRR/GRRL 使用 */
 
 /* ==================== 公共函数声明 ==================== */
 
@@ -121,18 +122,21 @@ double calc_distortion_db(double A_fund, double A_harm1, double A_harm2);
 
  
 
-/* ============================================================
-   shared.cpp — TP3057 测试程序公共函数实现
-   编译时与测试程序 .cpp 一同加入工程
 
-   语言标准：C95 (ISO/IEC 9899:1995)
+
+
+
+
+/* ============================================================
+
+
+    函数实现
+
+
    ============================================================ */
 
 
 
-/* 全局变量定义 */
-double gxa1020 = 0.0;
-double gra1020 = 0.0;
 
 /* ==================== 系统初始化 ==================== */
 void SETUP(void)
@@ -362,6 +366,16 @@ double calc_distortion_db(double A_fund, double A_harm1, double A_harm2)
     A_max_harm = (A_harm1 > A_harm2) ? A_harm1 : A_harm2;
     return 20.0 * log10(A_max_harm / A_fund);
 }
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -761,12 +775,12 @@ void PASCAL TP3057()
             SETUP();
 
             vout_rms_gra = 0.0;
-            RUN_PATTERN(10, 0, 0, 0);
+            RUN_PATTERN(10, 0, 0, 0);//1020Hz 0dBm0 PCM输入
             SET_AVM_PATH(LP20, BPPASS);
             vout_rms_gra = AVM_MEASURE(1, 2.0, V, 10);
             gra1020_local = 20.0 * log10(vout_rms_gra / 1.2276);
             gra1020 = gra1020_local;
-
+            vra_ref = vout_rms_gra;//保存参考电压，供后续 GRR/GRRL 使用
             SHOW_RESULT("GRA", gra1020_local, "dB", 0.15, -0.15);
             if (gra1020_local <= -0.15 || gra1020_local >= 0.15) {
                 //BIN(11);
@@ -789,8 +803,8 @@ void PASCAL TP3057()
 
             SETUP();
 
-            start_idx_list[0] = 8;
-            start_idx_list[1] = 12;
+            start_idx_list[0] = 8;//300Hz 0dBm0 PCM输入
+            start_idx_list[1] = 12;//3000Hz 0dBm0 PCM输入
             freq_list_grr[0]  = 300.0;
             freq_list_grr[1]  = 3000.0;
             num_freq_grr = 2;
@@ -800,7 +814,7 @@ void PASCAL TP3057()
                 RUN_PATTERN(start_idx_list[i], 0, 0, 0);
                 SET_AVM_PATH(LP20, BPPASS);
                 vout_rms_grr = AVM_MEASURE(1, 2.0, V, 10);
-                Grf = 20.0 * log10(vout_rms_grr / 1.2276);
+                Grf = 20.0 * log10(vout_rms_grr / vra_ref);//分母参考电压可为vra_ref 或直接用1.2276v
                 GRR_val = Grf - gra1020_local;
 
                 sprintf_s(name, sizeof(name), "GRR_%dHz", (int)freq_list_grr[i]);
@@ -835,8 +849,8 @@ void PASCAL TP3057()
 
             level_dbm0[0] = -40.0;
             level_dbm0[1] = 3.0;
-            index[0] = 9;
-            index[1] = 11;
+            index[0] = 9;//1020Hz -40dBm0 PCM输入
+            index[1] = 11;//1020Hz 3dBm0 PCM输入
             num = 2;
 
             fail_grrl = 0;
@@ -845,13 +859,13 @@ void PASCAL TP3057()
                 L   = level_dbm0[i];
                 RUN_PATTERN(idx, 0, 0, 0);
                 if (i == 0) {
-                    vout_grrl = AVM_MEASURE(1, 20.0, MV, 10) / 1000.0;
+                    vout_grrl = AVM_MEASURE(1, 20.0, MV, 10) / 1000.0;//除以1000将mV转换为V
                 }
                 if (i == 1) {
-                    vout_grrl = AVM_MEASURE(1, 2.0, V, 10);
+                    vout_grrl = AVM_MEASURE(1, 5.0, V, 10);//如果返回的值过小，可能超量程，改为5v
                 }
 
-                Gabs = 20.0 * log10(vout_grrl / 1.2276);
+                Gabs = 20.0 * log10(vout_grrl / vra_ref);//分母参考电压可为vra_ref 或直接用1.2276v
                 delta = Gabs - L - gra1020_local;
 
                 sprintf_s(name, sizeof(name), "GRRL_%+ddBm", (int)L);
