@@ -1,0 +1,17 @@
+gra1020_local
+vra_ref
+L = -40dbm0 / 3dbm0
+
+1.
+Gabs = 20.0 * log10(vout_grrl / 1.2276)
+grrl = Gabs - L - gra1020_local
+
+2.
+Gabs = 20.0 * log10(vout_grrl / vra_ref)
+grrl = Gabs - L
+
+3.
+Gabs = 20.0 * log10(vout_grrl / L对应的电压)
+grrl = Gabs - gra1020_local
+
+三种方法等价

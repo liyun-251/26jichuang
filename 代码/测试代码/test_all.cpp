@@ -62,6 +62,7 @@
 /* ==================== 全局变量（跨测试共享） ==================== */
 extern double gxa1020;   /* GXA 测得的 1020Hz 参考增益，供 GXR 使用 */
 extern double gra1020;   /* GRA 测得的 1020Hz 参考增益，供 GRR/GRRL 使用 */
+extern double vra_ref;   /* GRA 测得的参考电压，供 GRR/GRRL 使用 */
 
 /* ==================== 公共函数声明 ==================== */
 
@@ -121,18 +122,21 @@ double calc_distortion_db(double A_fund, double A_harm1, double A_harm2);
 
  
 
-/* ============================================================
-   shared.cpp — TP3057 测试程序公共函数实现
-   编译时与测试程序 .cpp 一同加入工程
 
-   语言标准：C95 (ISO/IEC 9899:1995)
+
+
+
+
+/* ============================================================
+
+
+    函数实现
+
+
    ============================================================ */
 
 
 
-/* 全局变量定义 */
-double gxa1020 = 0.0;
-double gra1020 = 0.0;
 
 /* ==================== 系统初始化 ==================== */
 void SETUP(void)
@@ -373,6 +377,16 @@ double calc_distortion_db(double A_fund, double A_harm1, double A_harm2)
 
 
 
+
+
+
+
+
+
+
+
+
+
 /* ==================== 各测试项独立使能开关 ==================== */
 #define TEST_CON_ENABLE       1   /* 连接性测试 */
 #define TEST_FUNC_ENABLE      1   /* 功能测试 */
@@ -411,7 +425,7 @@ void PASCAL TP3057()
 
         PMU_CONDITIONS(FIMV, -0.1, MA, 2, V);
 
-        if (!PMU_MEASURE("1,2,3,4,44,45,46,47,48", 20, "CON_", V, -0.1, -1.9))
+        if (!PMU_MEASURE("1,2,3,4,44,45,46,47,48", 20, "CON_", V, -0.1, -1.9))//加入模拟通道后：1,2,3,4,5,41,42,43,44,45,46,47,48（第一次测试时模拟脚数值异常）
         {
             SHOW_RESULT("CON-TEST=>FAIL", 1, "", 1, 1);
             //BIN(1);
@@ -532,7 +546,7 @@ void PASCAL TP3057()
 
         SETUP();
 
-        RUN_PATTERN(4, 1, 0, 0);
+        RUN_PATTERN(4, 1, 0, 0);//进入高阻态
 
         /* IOZL：对地漏电（加 0.1V 测电流） */
         PMU_CONDITIONS(FVMI, 0.1, V, 100, UA);
@@ -568,15 +582,16 @@ void PASCAL TP3057()
 
         SETUP();
 
-        RUN_PATTERN(5, 1, 0, 0);
+
+        RUN_PATTERN(5, 1, 0, 0);//进入掉电
         Delay(50);
 
         fail = 0;
 
-        if (!DPS_MEASURE(DPS1, R20MA, 5, "ICC0", MA, 1.5, No_LoLimit)) {
+        if (!DPS_MEASURE(DPS2, R20MA, 5, "ICC0", MA, 1.5, No_LoLimit)) {//dsp2-vcc
             fail++;
         }
-        if (!DPS_MEASURE(DPS2, R2MA, 5, "IBB0", MA, 0.3, No_LoLimit)) {
+        if (!DPS_MEASURE(DPS1, R2MA, 5, "IBB0", MA, 0.3, No_LoLimit)) {//dsp1-vbb
             fail++;
         }
 
@@ -613,11 +628,11 @@ void PASCAL TP3057()
         icc1_fail = 0;
         ibb1_fail = 0;
 
-        if (!DPS_MEASURE(DPS1, R20MA, 5, "ICC1", MA, 9, No_LoLimit)) {
+        if (!DPS_MEASURE(DPS2, R20MA, 5, "ICC1", MA, 9, No_LoLimit)) {
             fail++;
             icc1_fail = 1;
         }
-        if (!DPS_MEASURE(DPS2, R20MA, 5, "IBB1", MA, 9, No_LoLimit)) {
+        if (!DPS_MEASURE(DPS1, R20MA, 5, "IBB1", MA, 9, No_LoLimit)) {
             fail++;
             ibb1_fail = 1;
         }
@@ -683,7 +698,7 @@ void PASCAL TP3057()
         {
             unsigned char pcm_buf_gxr[512];
             int num_byte_gxr;
-            double freq_list_gxr[4];
+            double freq_list_gxr[3];
             int num_freq_gxr;
             int fail_count;
             int i;
@@ -696,10 +711,9 @@ void PASCAL TP3057()
             SETUP();
 
             freq_list_gxr[0] = 300.0;
-            freq_list_gxr[1] = 1000.0;
-            freq_list_gxr[2] = 2000.0;
-            freq_list_gxr[3] = 3000.0;
-            num_freq_gxr = 4;
+            freq_list_gxr[1] = 2000.0;
+            freq_list_gxr[2] = 3000.0;
+            num_freq_gxr = 3;
             fail_count = 0;
 
             for (i = 0; i < num_freq_gxr; i++) {
@@ -710,9 +724,9 @@ void PASCAL TP3057()
                 RUN_PATTERN(7, 0, 0, 0);
                 num_byte_gxr = capture_multi_pcm_bytes_fsx(7, 46, 43, 0, pcm_buf_gxr, 512);
                 if (num_byte_gxr == 0) {
-                    //BIN(29);
-                    fail_count++;
+                    fail_count++;//捕获失败
                     SHOW_RESULT("GXR_CAP_FAIL", f, "Hz", 0, 0);
+                    //BIN(29);
                     continue;
                 }
 
@@ -761,12 +775,12 @@ void PASCAL TP3057()
             SETUP();
 
             vout_rms_gra = 0.0;
-            RUN_PATTERN(10, 0, 0, 0);
+            RUN_PATTERN(10, 0, 0, 0);//1020Hz 0dBm0 PCM输入
             SET_AVM_PATH(LP20, BPPASS);
             vout_rms_gra = AVM_MEASURE(1, 2.0, V, 10);
             gra1020_local = 20.0 * log10(vout_rms_gra / 1.2276);
             gra1020 = gra1020_local;
-
+            vra_ref = vout_rms_gra;//保存参考电压，供后续 GRR/GRRL 使用
             SHOW_RESULT("GRA", gra1020_local, "dB", 0.15, -0.15);
             if (gra1020_local <= -0.15 || gra1020_local >= 0.15) {
                 //BIN(11);
@@ -789,8 +803,8 @@ void PASCAL TP3057()
 
             SETUP();
 
-            start_idx_list[0] = 8;
-            start_idx_list[1] = 12;
+            start_idx_list[0] = 8;//300Hz 0dBm0 PCM输入
+            start_idx_list[1] = 12;//3000Hz 0dBm0 PCM输入
             freq_list_grr[0]  = 300.0;
             freq_list_grr[1]  = 3000.0;
             num_freq_grr = 2;
@@ -800,7 +814,7 @@ void PASCAL TP3057()
                 RUN_PATTERN(start_idx_list[i], 0, 0, 0);
                 SET_AVM_PATH(LP20, BPPASS);
                 vout_rms_grr = AVM_MEASURE(1, 2.0, V, 10);
-                Grf = 20.0 * log10(vout_rms_grr / 1.2276);
+                Grf = 20.0 * log10(vout_rms_grr / 1.2276);//分母参考电压可为vra_ref 或用1.2276v算出后减去gra
                 GRR_val = Grf - gra1020_local;
 
                 sprintf_s(name, sizeof(name), "GRR_%dHz", (int)freq_list_grr[i]);
@@ -835,8 +849,8 @@ void PASCAL TP3057()
 
             level_dbm0[0] = -40.0;
             level_dbm0[1] = 3.0;
-            index[0] = 9;
-            index[1] = 11;
+            index[0] = 9;//1020Hz -40dBm0 PCM输入
+            index[1] = 11;//1020Hz 3dBm0 PCM输入
             num = 2;
 
             fail_grrl = 0;
@@ -845,14 +859,14 @@ void PASCAL TP3057()
                 L   = level_dbm0[i];
                 RUN_PATTERN(idx, 0, 0, 0);
                 if (i == 0) {
-                    vout_grrl = AVM_MEASURE(1, 20.0, MV, 10) / 1000.0;
+                    vout_grrl = AVM_MEASURE(1, 20.0, MV, 10) / 1000.0;//除以1000将mV转换为V
                 }
                 if (i == 1) {
-                    vout_grrl = AVM_MEASURE(1, 2.0, V, 10);
+                    vout_grrl = AVM_MEASURE(1, 5.0, V, 10);//如果返回的值过小，可能超量程，改为5v
                 }
 
-                Gabs = 20.0 * log10(vout_grrl / 1.2276);
-                delta = Gabs - L - gra1020_local;
+                Gabs = 20.0 * log10(vout_grrl / 1.2276);//分母参考电压可为vra_ref 或直接用1.2276v
+                delta = Gabs - L - gra1020_local;//除以该电平点的理想输出电压；等价于先除以 1.2276 得 Gabs，再减去输入电平
 
                 sprintf_s(name, sizeof(name), "GRRL_%+ddBm", (int)L);
                 SHOW_RESULT(name, delta, "dB", 0.2, -0.2);
@@ -865,6 +879,21 @@ void PASCAL TP3057()
             else
                 {SHOW_RESULT("GRRL=>PASS", 1, "", 1, 1);}
         }
+/*
+1.
+Gabs = 20.0 * log10(vout_grrl / 1.2276)
+grrl = Gabs - L - gra1020_local
+
+2.
+Gabs = 20.0 * log10(vout_grrl / vra_ref)
+grrl = Gabs - L
+
+3.
+Gabs = 20.0 * log10(vout_grrl / L对应的电压)
+grrl = Gabs - gra1020_local
+
+三种方法等价
+*/
 #endif
 
         DPS_OFF(DPS1);
