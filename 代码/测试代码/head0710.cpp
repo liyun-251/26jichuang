@@ -212,8 +212,8 @@ int capture_multi_pcm_bytes_legacy(int start_idx, int dx_channel, int offset,  /
  *
  *   offset 参数保留用于兼容，表示从第几个周期开始搜索 FSX 脉冲。
  */
-int capture_multi_pcm_bytes_fsx(int start_idx, int dx_channel, int fsx_channel, int offset,
-                                unsigned char* pcm_bytes, int num_bytes)
+int capture_multi_pcm_bytes_fsx(int start_idx, int dx_channel, int fsx_channel, int offset,//输入参数：图形编号（需与RUN_PATTERN中一致）、DX通道号、FSX通道号、数据位起始周期偏移、
+                                unsigned char* pcm_bytes, int num_bytes)//输出缓冲区指针、num_bytes 要捕获的字节数
 {
     BYTE* fsx_fail_bits;   /* FSX 监测通道的失效存储器指针 */
     BYTE* dx_fail_bits;    /* DX 数据通道的失效存储器指针 */

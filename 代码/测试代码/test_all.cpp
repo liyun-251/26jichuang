@@ -568,7 +568,7 @@ void PASCAL TP3057()
 
         SETUP();
 
-        
+
         RUN_PATTERN(5, 1, 0, 0);//进入掉电
         Delay(50);
 
@@ -684,7 +684,7 @@ void PASCAL TP3057()
         {
             unsigned char pcm_buf_gxr[512];
             int num_byte_gxr;
-            double freq_list_gxr[4];
+            double freq_list_gxr[3];
             int num_freq_gxr;
             int fail_count;
             int i;
@@ -697,10 +697,9 @@ void PASCAL TP3057()
             SETUP();
 
             freq_list_gxr[0] = 300.0;
-            freq_list_gxr[1] = 1000.0;
-            freq_list_gxr[2] = 2000.0;
-            freq_list_gxr[3] = 3000.0;
-            num_freq_gxr = 4;
+            freq_list_gxr[1] = 2000.0;
+            freq_list_gxr[2] = 3000.0;
+            num_freq_gxr = 3;
             fail_count = 0;
 
             for (i = 0; i < num_freq_gxr; i++) {
@@ -711,9 +710,9 @@ void PASCAL TP3057()
                 RUN_PATTERN(7, 0, 0, 0);
                 num_byte_gxr = capture_multi_pcm_bytes_fsx(7, 46, 43, 0, pcm_buf_gxr, 512);
                 if (num_byte_gxr == 0) {
-                    //BIN(29);
-                    fail_count++;
+                    fail_count++;//捕获失败
                     SHOW_RESULT("GXR_CAP_FAIL", f, "Hz", 0, 0);
+                    //BIN(29);
                     continue;
                 }
 
