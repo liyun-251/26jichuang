@@ -814,7 +814,7 @@ void PASCAL TP3057()
                 RUN_PATTERN(start_idx_list[i], 0, 0, 0);
                 SET_AVM_PATH(LP20, BPPASS);
                 vout_rms_grr = AVM_MEASURE(1, 2.0, V, 10);
-                Grf = 20.0 * log10(vout_rms_grr / vra_ref);//分母参考电压可为vra_ref 或直接用1.2276v
+                Grf = 20.0 * log10(vout_rms_grr / 1.2276);//分母参考电压可为vra_ref 或用1.2276v算出后减去gra
                 GRR_val = Grf - gra1020_local;
 
                 sprintf_s(name, sizeof(name), "GRR_%dHz", (int)freq_list_grr[i]);
@@ -865,8 +865,8 @@ void PASCAL TP3057()
                     vout_grrl = AVM_MEASURE(1, 5.0, V, 10);//如果返回的值过小，可能超量程，改为5v
                 }
 
-                Gabs = 20.0 * log10(vout_grrl / vra_ref);//分母参考电压可为vra_ref 或直接用1.2276v
-                delta = Gabs - L - gra1020_local;
+                Gabs = 20.0 * log10(vout_grrl / 1.2276);//分母参考电压可为vra_ref 或直接用1.2276v
+                delta = Gabs - L - gra1020_local;//除以该电平点的理想输出电压；等价于先除以 1.2276 得 Gabs，再减去输入电平
 
                 sprintf_s(name, sizeof(name), "GRRL_%+ddBm", (int)L);
                 SHOW_RESULT(name, delta, "dB", 0.2, -0.2);
@@ -879,6 +879,21 @@ void PASCAL TP3057()
             else
                 {SHOW_RESULT("GRRL=>PASS", 1, "", 1, 1);}
         }
+/*
+1.
+Gabs = 20.0 * log10(vout_grrl / 1.2276)
+grrl = Gabs - L - gra1020_local
+
+2.
+Gabs = 20.0 * log10(vout_grrl / vra_ref)
+grrl = Gabs - L
+
+3.
+Gabs = 20.0 * log10(vout_grrl / L对应的电压)
+grrl = Gabs - gra1020_local
+
+三种方法等价
+*/
 #endif
 
         DPS_OFF(DPS1);
