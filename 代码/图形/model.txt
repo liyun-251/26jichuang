@@ -1,0 +1,18 @@
+MEM_SOURCE_15;
+
+PINDEF
+TSX             =O,BIN,(48)
+MCLKX           =I,BIN,(45)
+BCLKX           =I,BIN,(44)
+PDN             =I,BIN,(4)
+BCLKR           =I,BIN,(3)
+FSX             =I,BIN,(47)
+DX              =O,BIN,(46)
+FSR             =I,BIN,(1)
+DR              =I,BIN,(2)
+FSRBEED         =O,BIN,(43)
+
+MAIN_F
+
+
+END.
