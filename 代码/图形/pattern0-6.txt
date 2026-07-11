@@ -1,0 +1,97 @@
+MEM_SOURCE_15;
+
+PINDEF
+TSX             =O,BIN,(48)
+MCLKX           =I,BIN,(45)
+BCLKX           =I,BIN,(44)
+PDN             =I,BIN,(4)
+BCLKR           =I,BIN,(3)
+FSX             =I,BIN,(47)
+DX              =O,BIN,(46)
+FSR             =I,BIN,(1)
+DR              =I,BIN,(2)
+FSRBEED         =O,BIN,(43)
+
+MAIN_F
+
+START_INDEX(0){FUN-DC}
+                 {O TTTC TTRR}
+    INC          (H 1101 0X00X)
+    INC          (H 1101 0X00X)
+    INC          (H 1101 0X00X)
+A   INC          (H 1101 1X10X) //T
+    INC          (L 1101 0H01X)
+    INC          (L 1101 0L00X)
+    INC          (L 1101 0H01X)
+    INC          (L 1101 0L00X)
+    INC          (L 1101 0H01X)
+    INC          (L 1101 0L00X)
+    INC          (L 1101 0H01X)
+    GONP,A       (L 1101 0L00X)
+    RPT,247      (X 1101 0X00X)
+    LDC,4095     (X 1101 0X00X)//R
+B   INC          (X 1101 0X10X)
+    INC          (X 1101 0X01X)
+    INC          (X 1101 0X00X)
+    INC          (X 1101 0X01X)
+    INC          (X 1101 0X00X)
+    INC          (X 1101 0X01X)
+    INC          (X 1101 0X00X)
+    INC          (X 1101 0X01X)
+    INC          (X 1101 0X00X)
+    RPT,246      (X 1101 0X00X)
+    LOOP,B       (X 1101 0X00X)
+    HALT         (X 1101 0X00X)
+
+START_INDEX(1){IIL}//所有波形NRZ0
+        {O TTTC TTRR}
+    INC      (X 1111 1X11X)
+    INC      (X 1111 1X11X)
+    INC      (X 1111 1X11X)
+    INC      (X 1111 1X11X)
+    HALT  (X 1111 1X11X)
+
+START_INDEX(2){IIH}//所有波形NRZ0
+    INC      (X 0000 0X00X)
+    INC      (X 0000 0X00X)
+    INC      (X 0000 0X00X)
+    INC      (X 0000 0X00X)
+    HALT  (X 0000 0X00X)
+
+START_INDEX(3){POWER_UP}//取消DX高阻态
+    INC          (X 1101 0X00X)
+    INC          (X 1101 0X00X)
+    INC          (X 1101 0X00X)
+    INC          (X 1101 1X00X)
+    RPT,254   (X 1101 0X00X)
+    INC          (X 1101 1X00X)
+    RPT,255   (X 1101 0X00X)
+    HALT      (X 1101 0X00X)
+
+START_INDEX(4){POWER_UP}
+    INC           (X 1101 0X00X)
+    INC           (X 1101 0X00X)
+    INC           (X 1101 0X00X)
+    RPT,4095   (X 1101 0X00X)
+    HALT       (X 1101 0X00X)
+
+START_INDEX(5){POWER_DOWN}
+    INC          (x 0010 0X00X)
+    INC          (x 0010 0X00X)
+    INC          (x 0010 0X00X)
+    RPT,255   (x 0010 0X00X)
+    HALT      (x 0010 0X00X)
+
+START_INDEX(6){ICC IBB}//work
+            {X TTTC TTRR}
+    INC          (X 1101 0X00X)
+    INC          (X 1101 0X00X)
+    INC          (X 1101 0X00X)
+    LDC,4095  (X 1101 0X00X)
+C   INC          (X 1101 1X10X)
+    RPT,7     (X 1101 0H01X)
+    RPT,246   (X 1101 0X00X)
+    LOOP,C    (X 1101 0X00X)
+    HALT      (X 1101 0X00X)
+
+    END.
