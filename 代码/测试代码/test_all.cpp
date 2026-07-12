@@ -36,9 +36,12 @@
 #define SFDX_SAMPLE_RATE      8000.0      /* PCM 采样率 (Hz) */
 
 /* ==================== SFDR 参数 ==================== */
-#define SFDR_FFT_POINTS       2048        /* FFT 点数（2的幂） */
-#define SFDR_DVM_SR           100000.0    /* DVM 采样率 (Hz) */
-#define SFDR_FREQ_RES         (SFDR_DVM_SR / SFDR_FFT_POINTS)
+#define SFDR_FFT_POINTS       512         /* FFT 点数（2的幂） */
+//#define SFDR_DVM_SR           100000.0    /* DVM 采样率 (Hz) */
+//#define SFDR_FREQ_RES         (SFDR_DVM_SR / SFDR_FFT_POINTS)
+/* SFDR 本地常量（原 test_11_sfdr.cpp 中定义，不在 shared.h） */
+#define SFDR_FREQ_DIV  383         /* 50MHz/383≈130.5kHz, 1020Hz 对齐 bin16 */
+#define SFDR_NAVG      4           /* 测量平均次数 */
 
 /* ==================== IMD 参数 (Loop Around Measurement) ==================== */
 /*更改频率为390.625Hz和3320.3125Hz，保证频点对齐FFT bin，避免频谱泄漏
@@ -404,9 +407,15 @@ double calc_distortion_db(double A_fund, double A_harm1, double A_harm2)
 #define TEST_SFDR_ENABLE      1   /* SFDR 接收单频失真 */
 #define TEST_IMD_ENABLE       1   /* IMD 互调失真 */
 
-/* SFDR 本地常量（原 test_11_sfdr.cpp 中定义，不在 shared.h） */
-#define SFDR_FREQ_DIV  383         /* 50MHz/383≈130.5kHz, 1020Hz 对齐 bin16 */
-#define SFDR_NAVG      4           /* 测量平均次数 */
+/* ==================== 分箱开关 ==================== */
+#define BIN_ENABLE 0               /* 1=生产分箱, 0=调试不分箱 */
+#if BIN_ENABLE
+  #define DO_BIN(n) BIN(n)
+#else
+  #define DO_BIN(n) ((void)0)
+#endif
+
+
 
 
 void PASCAL TP3057()
@@ -428,7 +437,7 @@ void PASCAL TP3057()
         if (!PMU_MEASURE("1,2,3,4,44,45,46,47,48", 20, "CON_", V, -0.1, -1.9))//加入模拟通道后：1,2,3,4,5,41,42,43,44,45,46,47,48（第一次测试时模拟脚数值异常）
         {
             SHOW_RESULT("CON-TEST=>FAIL", 1, "", 1, 1);
-            //BIN(1);
+            DO_BIN(1);
             CLEAR_RELAY("3,4,5,6");
             DPS_OFF(DPS1);
             DPS_OFF(DPS2);
@@ -494,7 +503,7 @@ void PASCAL TP3057()
         PMU_CONDITIONS(FVMI, 0.4, V, 100, UA);
 
         if (!PMU_MEASURE("1,2,3,4,44,45,47", 5, "IIL", UA, 10, -10))
-            //{ BIN(2);}
+            DO_BIN(2);
         else
             {SHOW_RESULT("IIL=>PASS", 1, "", 1, 1);}
 
@@ -522,7 +531,7 @@ void PASCAL TP3057()
         PMU_CONDITIONS(FVMI, 3, V, 100, UA);
 
         if (!PMU_MEASURE("1,2,3,4,44,45,47", 5, "IIH", UA, 10, -10))
-            //{ BIN(3); }
+            DO_BIN(3);
         else
             { SHOW_RESULT("IIH=>PASS", 1, "", 1, 1); }
 
@@ -551,7 +560,7 @@ void PASCAL TP3057()
         /* IOZL：对地漏电（加 0.1V 测电流） */
         PMU_CONDITIONS(FVMI, 0.1, V, 100, UA);
         if (!PMU_MEASURE("46", 5, "IOZL", UA, 10, -10))
-            //{BIN(4);}
+            DO_BIN(4);
 
         //result_iozl_1 = PMU_MEASURE("46", 5);
         //SHOW_RESULT("result_iozl_1", result_iozl_1, "UA", 10, -10);
@@ -559,7 +568,7 @@ void PASCAL TP3057()
         /* IOZH：对 VCC 漏电（加 4.9V 测电流） */
         PMU_CONDITIONS(FVMI, 4.9, V, 100, UA);
         if (!PMU_MEASURE("46", 5, "IOZH", UA, 10, -10))
-           // {BIN(5);}
+           DO_BIN(5);
 
         SHOW_RESULT("IOZ=>PASS", 1, "", 1, 1);
 
@@ -596,7 +605,7 @@ void PASCAL TP3057()
         }
 
         if (fail != 0)
-            //{BIN(6);}
+            DO_BIN(6);
         else
             {SHOW_RESULT("ICC0IBB0=>PASS", 1, "", 1, 1);}
 
@@ -640,11 +649,11 @@ void PASCAL TP3057()
         if (fail != 0) {
             if (icc1_fail) {
                 SHOW_RESULT("ICC1=>FAIL", 0, "", 1, 0);
-               // BIN(7);
+               DO_BIN(7);
             }
             if (ibb1_fail) {
                 SHOW_RESULT("IBB1=>FAIL", 0, "", 1, 0);
-                //BIN(8);
+                DO_BIN(8);
             }
         }
         else
@@ -677,7 +686,7 @@ void PASCAL TP3057()
         RUN_PATTERN(7, 0, 0, 0);
         num_byte = capture_multi_pcm_bytes_fsx(7, 46, 43, 0, pcm_buf_gxa, 512);
         if (num_byte == 0) {
-            //BIN(27);                            /* 原 BIN(7)，与 ICC1 冲突，改为 27 */
+            DO_BIN(27);                            /* 原 BIN(7)，与 ICC1 冲突，改为 27 */
             SHOW_RESULT("GXA_CAP_FAIL", 1, "", 1, 0);
             goto END_GXA;
         }
@@ -688,7 +697,7 @@ void PASCAL TP3057()
 
         SHOW_RESULT("GXA", gxa1020, "dB", 0.15, -0.15);
         if (gxa1020 <= -0.15 || gxa1020 >= 0.15) {
-            //BIN(28);                            /* 原 BIN(8)，与 IBB1 冲突，改为 28 */
+            DO_BIN(28);                            /* 原 BIN(8)，与 IBB1 冲突，改为 28 */
         }
 #endif
     END_GXA: ;
@@ -726,7 +735,7 @@ void PASCAL TP3057()
                 if (num_byte_gxr == 0) {
                     fail_count++;//捕获失败
                     SHOW_RESULT("GXR_CAP_FAIL", f, "Hz", 0, 0);
-                    //BIN(29);
+                    DO_BIN(29);
                     continue;
                 }
 
@@ -743,7 +752,7 @@ void PASCAL TP3057()
             }
 
             if (fail_count != 0)
-               // {BIN(30);}
+               DO_BIN(30);
             else
                 {SHOW_RESULT("GXR=>PASS", 1, "", 1, 1);}
         }
@@ -783,7 +792,7 @@ void PASCAL TP3057()
             vra_ref = vout_rms_gra;//保存参考电压，供后续 GRR/GRRL 使用
             SHOW_RESULT("GRA", gra1020_local, "dB", 0.15, -0.15);
             if (gra1020_local <= -0.15 || gra1020_local >= 0.15) {
-                //BIN(11);
+                DO_BIN(11);
             }
         }
 #endif
@@ -824,7 +833,7 @@ void PASCAL TP3057()
             }
 
             if (fail != 0)
-               // {BIN(12);}
+               DO_BIN(12);
             else
                 {SHOW_RESULT("GRR=>PASS", 1, "", 1, 1);}
         }
@@ -875,7 +884,7 @@ void PASCAL TP3057()
             }
 
             if (fail_grrl != 0)
-                //{BIN(13);}
+                DO_BIN(13);
             else
                 {SHOW_RESULT("GRRL=>PASS", 1, "", 1, 1);}
         }
@@ -910,10 +919,10 @@ grrl = Gabs - gra1020_local
        ================================================================ */
 #if TEST_SFDX_ENABLE
     {
-        unsigned char pcm_data[512];
+        unsigned char pcm_data[SFDX_FFT_POINTS];
         int captured;
-        double voltage[512];
-        double fft_mag[256];
+        double voltage[SFDX_FFT_POINTS];
+        double fft_mag[SFDX_FFT_POINTS / 2];
         double freq_res;
         int max_bin;
         int bin_fund;
@@ -934,7 +943,7 @@ grrl = Gabs - gra1020_local
         captured = capture_multi_pcm_bytes_fsx(7, 46, 43, 0, pcm_data, SFDX_FFT_POINTS);
         if (captured != SFDX_FFT_POINTS) {
             SHOW_RESULT("SFDX_CAP_FAIL", (double)captured, "bytes", SFDX_FFT_POINTS, 0);
-            //BIN(14);
+            DO_BIN(14);
             goto END_SFDX;
         }
 
@@ -950,7 +959,7 @@ grrl = Gabs - gra1020_local
 
         /* 6. FFT */
         if (!DFT(voltage, SFDX_FFT_POINTS, fft_mag)) {
-            //BIN(15);
+            DO_BIN(15);
             goto END_SFDX;
         }
 
@@ -963,7 +972,7 @@ grrl = Gabs - gra1020_local
         bin_3rd  = freq_to_bin(3.0 * 1020.0, freq_res, max_bin);
 
         if (bin_2nd < 0 || bin_3rd < 0) {
-            //BIN(16);
+            DO_BIN(16);
             goto END_SFDX;
         }
 
@@ -973,13 +982,13 @@ grrl = Gabs - gra1020_local
                                       fft_mag[bin_3rd]);
 
         if (SFDX_db >= 0.9) {
-           // BIN(17);
+           DO_BIN(17);
             SHOW_RESULT("SFDX_bin_fund_LOST", 1, "", 1, 0);
         }
         else {
             SHOW_RESULT("SFDX", SFDX_db, "dB", -46, No_LoLimit);
             if (SFDX_db > -46) {
-                //BIN(18);
+                DO_BIN(18);
             }
             else {
                 SHOW_RESULT("SFDX=>PASS", 1, "", 1, 1);
@@ -994,16 +1003,16 @@ grrl = Gabs - gra1020_local
 
     /* ================================================================
        Test 11: SFDR — 接收单频失真测试
-       图形10(1020Hz 0dBm0 PCM) → DVM 采样 2048 点 × 4 次 → 加窗 → DFT
+       图形10(1020Hz 0dBm0 PCM) → DVM 采样 512 点 × 4 次 → 加窗 → DFT
        → 累加平均幅度谱 → 基波 + 2次/3次谐波
        限值：≤ -46dB
-       FFT: FREQ_DIV=383, Fs≈130548Hz, N=2048, Δf≈63.74Hz, 1020Hz→bin16
+       FFT: FREQ_DIV=383, Fs≈130548Hz, N=512, Δf≈254.98Hz, 1020Hz→bin4
        注意：原独立文件中 BIN(18) 与 SFDX 冲突，SFDR_PAT_FAIL 改为 BIN(31)
        ================================================================ */
 #if TEST_SFDR_ENABLE
     {
         double voltage[SFDR_FFT_POINTS];
-        double fft_mag[SFDR_FFT_POINTS / 2];
+        double fft_mag[SFDR_FFT_POINTS / 2];//单次dft的幅度谱
         double fft_mag_sum[SFDR_FFT_POINTS / 2];
         double actual_sr;
         double freq_res;
@@ -1026,22 +1035,22 @@ grrl = Gabs - gra1020_local
         /* 3. 多次测量，累加幅度谱 */
         for (run = 0; run < SFDR_NAVG; run++) {
             if (!RUN_PATTERN(10, 0, 0, 0)) {
-                //BIN(31);                        /* 原 BIN(18)，与 SFDX 冲突，改为 31 */
+                DO_BIN(31);                        /* 原 BIN(18)，与 SFDX 冲突，改为 31 */
                 SHOW_RESULT("SFDR_PAT_FAIL", 1, "", 1, 0);
                 goto END_SFDR;
             }
             Delay(10);
 
-            MAT_DVM_MEASURE(1, 2.0, V, 10, SFDR_FFT_POINTS, SFDR_FREQ_DIV, voltage);
+            MAT_DVM_MEASURE(1, 5.0, V, 10, SFDR_FFT_POINTS, SFDR_FREQ_DIV, voltage);
 
             apply_hanning(voltage, SFDR_FFT_POINTS);
 
             if (!DFT(voltage, SFDR_FFT_POINTS, fft_mag)) {
-               // BIN(19);
+               DO_BIN(19);
                 goto END_SFDR;
             }
 
-            for (i = 0; i < SFDR_FFT_POINTS / 2; i++) {
+            for (i = 0; i < SFDR_FFT_POINTS / 2; i++) {//为什么这里要除以2
                 fft_mag_sum[i] += fft_mag[i];
             }
         }
@@ -1052,16 +1061,16 @@ grrl = Gabs - gra1020_local
         }
 
         /* 5. 查找基波和谐波 bin */
-        actual_sr = 50e6 / SFDR_FREQ_DIV;
-        freq_res  = actual_sr / SFDR_FFT_POINTS;
-        max_bin   = SFDR_FFT_POINTS / 2;
+        actual_sr = 50e6 / SFDR_FREQ_DIV;//实际采样率
+        freq_res  = actual_sr / SFDR_FFT_POINTS;//频率分辨率
+        max_bin   = SFDR_FFT_POINTS / 2;//最大 bin 数
 
         bin_fund = freq_to_bin(1020.0, freq_res, max_bin);
         bin_2nd  = freq_to_bin(2.0 * 1020.0, freq_res, max_bin);
         bin_3rd  = freq_to_bin(3.0 * 1020.0, freq_res, max_bin);
 
         if (bin_2nd < 0 || bin_3rd < 0) {
-            //BIN(20);
+            DO_BIN(20);
             goto END_SFDR;
         }
 
@@ -1071,12 +1080,12 @@ grrl = Gabs - gra1020_local
                                       fft_mag[bin_3rd]);
 
         if (SFDR_db >= 0.9) {
-            //BIN(21);
+            DO_BIN(21);
             SHOW_RESULT("SFDR_FUND_LOST", 1, "", 1, 0);
         } else {
             SHOW_RESULT("SFDR", SFDR_db, "dB", -46, No_LoLimit);
             if (SFDR_db > -46) {
-                //BIN(22);
+                DO_BIN(22);
             } else {
                 SHOW_RESULT("SFDR=>PASS", 1, "", 1, 1);
             }
@@ -1155,7 +1164,7 @@ grrl = Gabs - gra1020_local
             apply_hanning(voltage, IMD_FFT_POINTS);
 
             if (!DFT(voltage, IMD_FFT_POINTS, fft_mag)) {
-                //BIN(23);
+                DO_BIN(23);
                 goto END_IMD;
             }
 
@@ -1180,7 +1189,7 @@ grrl = Gabs - gra1020_local
         bin_diff = freq_to_bin(IMD_F2 - IMD_F1, freq_res, max_bin);
 
         if (bin_f1 < 0 || bin_f2 < 0 || bin_sum < 0 || bin_diff < 0) {
-            //BIN(24);
+            DO_BIN(24);
             goto END_IMD;
         }
 
@@ -1194,7 +1203,7 @@ grrl = Gabs - gra1020_local
         A_fund = (A_f1 > A_f2) ? A_f1 : A_f2;
 
         if (A_fund <= 0.0) {
-            //BIN(25);
+            DO_BIN(25);
             SHOW_RESULT("IMD_FUND_LOST", 1, "", 1, 0);
             goto END_IMD;
         }
@@ -1203,7 +1212,7 @@ grrl = Gabs - gra1020_local
 
         SHOW_RESULT("IMD", IMD_db, "dB", -41.0, No_LoLimit);
         if (IMD_db > -41.0) {
-            //BIN(26);
+            DO_BIN(26);
         } else {
             SHOW_RESULT("IMD=>PASS", 1, "", 1, 1);
         }
