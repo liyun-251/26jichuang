@@ -911,10 +911,10 @@ grrl = Gabs - gra1020_local
        ================================================================ */
 #if TEST_SFDX_ENABLE
     {
-        unsigned char pcm_data[512];
+        unsigned char pcm_data[SFDX_FFT_POINTS];
         int captured;
-        double voltage[512];
-        double fft_mag[256];
+        double voltage[SFDX_FFT_POINTS];
+        double fft_mag[SFDX_FFT_POINTS / 2];
         double freq_res;
         int max_bin;
         int bin_fund;
@@ -1004,7 +1004,7 @@ grrl = Gabs - gra1020_local
 #if TEST_SFDR_ENABLE
     {
         double voltage[SFDR_FFT_POINTS];
-        double fft_mag[SFDR_FFT_POINTS / 2];
+        double fft_mag[SFDR_FFT_POINTS / 2];//单次dft的幅度谱
         double fft_mag_sum[SFDR_FFT_POINTS / 2];
         double actual_sr;
         double freq_res;
@@ -1042,7 +1042,7 @@ grrl = Gabs - gra1020_local
                 goto END_SFDR;
             }
 
-            for (i = 0; i < SFDR_FFT_POINTS / 2; i++) {
+            for (i = 0; i < SFDR_FFT_POINTS / 2; i++) {//为什么这里要除以2
                 fft_mag_sum[i] += fft_mag[i];
             }
         }
@@ -1053,9 +1053,9 @@ grrl = Gabs - gra1020_local
         }
 
         /* 5. 查找基波和谐波 bin */
-        actual_sr = 50e6 / SFDR_FREQ_DIV;
-        freq_res  = actual_sr / SFDR_FFT_POINTS;
-        max_bin   = SFDR_FFT_POINTS / 2;
+        actual_sr = 50e6 / SFDR_FREQ_DIV;//实际采样率
+        freq_res  = actual_sr / SFDR_FFT_POINTS;//频率分辨率
+        max_bin   = SFDR_FFT_POINTS / 2;//最大 bin 数
 
         bin_fund = freq_to_bin(1020.0, freq_res, max_bin);
         bin_2nd  = freq_to_bin(2.0 * 1020.0, freq_res, max_bin);

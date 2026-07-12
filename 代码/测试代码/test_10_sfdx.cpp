@@ -26,10 +26,10 @@
 void PASCAL TP3057()
 {
 #if TEST_ENABLE
-    unsigned char pcm_data[512];  /* SFDX_FFT_POINTS */
+    unsigned char pcm_data[SFDX_FFT_POINTS];
     int captured;
-    double voltage[512];
-    double fft_mag[256];         /* SFDX_FFT_POINTS/2 */
+    double voltage[SFDX_FFT_POINTS];
+    double fft_mag[SFDX_FFT_POINTS / 2];
     double freq_res;
     int max_bin;
     int bin_fund, bin_2nd, bin_3rd;

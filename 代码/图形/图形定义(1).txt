@@ -12,7 +12,7 @@
 7 抓取PCM通用 - 需要至少512个pcm码
 8 300Hz 0dBm0 PCM输入 - 100ms足够
 9 1020Hz -40dBm0 PCM输入 - 100ms足够
-10 1020Hz 0dBm0 PCM输入 - 100ms左右
+10 1020Hz 0dBm0 PCM输入 - 100ms足够
 11 1020Hz 3dBm0 PCM输入 - 100ms足够
 12 3000Hz 0dBm0 PCM输入 - 100ms足够
 13 回环测试-交流功能测试
