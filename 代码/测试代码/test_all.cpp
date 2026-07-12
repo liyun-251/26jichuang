@@ -36,9 +36,12 @@
 #define SFDX_SAMPLE_RATE      8000.0      /* PCM 采样率 (Hz) */
 
 /* ==================== SFDR 参数 ==================== */
-#define SFDR_FFT_POINTS       2048        /* FFT 点数（2的幂） */
-#define SFDR_DVM_SR           100000.0    /* DVM 采样率 (Hz) */
-#define SFDR_FREQ_RES         (SFDR_DVM_SR / SFDR_FFT_POINTS)
+#define SFDR_FFT_POINTS       512         /* FFT 点数（2的幂） */
+//#define SFDR_DVM_SR           100000.0    /* DVM 采样率 (Hz) */
+//#define SFDR_FREQ_RES         (SFDR_DVM_SR / SFDR_FFT_POINTS)
+/* SFDR 本地常量（原 test_11_sfdr.cpp 中定义，不在 shared.h） */
+#define SFDR_FREQ_DIV  383         /* 50MHz/383≈130.5kHz, 1020Hz 对齐 bin16 */
+#define SFDR_NAVG      4           /* 测量平均次数 */
 
 /* ==================== IMD 参数 (Loop Around Measurement) ==================== */
 /*更改频率为390.625Hz和3320.3125Hz，保证频点对齐FFT bin，避免频谱泄漏
@@ -404,9 +407,7 @@ double calc_distortion_db(double A_fund, double A_harm1, double A_harm2)
 #define TEST_SFDR_ENABLE      1   /* SFDR 接收单频失真 */
 #define TEST_IMD_ENABLE       1   /* IMD 互调失真 */
 
-/* SFDR 本地常量（原 test_11_sfdr.cpp 中定义，不在 shared.h） */
-#define SFDR_FREQ_DIV  383         /* 50MHz/383≈130.5kHz, 1020Hz 对齐 bin16 */
-#define SFDR_NAVG      4           /* 测量平均次数 */
+
 
 
 void PASCAL TP3057()
@@ -997,7 +998,7 @@ grrl = Gabs - gra1020_local
        图形10(1020Hz 0dBm0 PCM) → DVM 采样 2048 点 × 4 次 → 加窗 → DFT
        → 累加平均幅度谱 → 基波 + 2次/3次谐波
        限值：≤ -46dB
-       FFT: FREQ_DIV=383, Fs≈130548Hz, N=2048, Δf≈63.74Hz, 1020Hz→bin16
+       FFT: FREQ_DIV=383, Fs≈130548Hz, N=512, Δf≈254.98Hz, 1020Hz→bin4
        注意：原独立文件中 BIN(18) 与 SFDX 冲突，SFDR_PAT_FAIL 改为 BIN(31)
        ================================================================ */
 #if TEST_SFDR_ENABLE
@@ -1032,7 +1033,7 @@ grrl = Gabs - gra1020_local
             }
             Delay(10);
 
-            MAT_DVM_MEASURE(1, 2.0, V, 10, SFDR_FFT_POINTS, SFDR_FREQ_DIV, voltage);
+            MAT_DVM_MEASURE(1, 5.0, V, 10, SFDR_FFT_POINTS, SFDR_FREQ_DIV, voltage);
 
             apply_hanning(voltage, SFDR_FFT_POINTS);
 
