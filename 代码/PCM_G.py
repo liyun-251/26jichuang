@@ -379,4 +379,4 @@ def save_alaw_inc_format(filename, frequency, dbm0, sample_rate=8000):
                 f.write("INC(X11010X00)\n")
 
 if __name__ == "__main__":
-    save_alaw_inc_format("output.txt",1020,3)
+    save_alaw_inc_format("3000Hz 0dBm0.txt",3000,0)
