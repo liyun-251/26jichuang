@@ -551,7 +551,7 @@ void PASCAL TP3057()
        ================================================================ */
 #if TEST_IIL_ENABLE
     {
-        double result_iil_1;
+        //double result_iil_1;
 
         SETUP();
 
@@ -579,7 +579,7 @@ void PASCAL TP3057()
        ================================================================ */
 #if TEST_IIH_ENABLE
     {
-        double result_iih_1;
+        //double result_iih_1;
 
         SETUP();
 
@@ -607,8 +607,8 @@ void PASCAL TP3057()
        ================================================================ */
 #if TEST_IOZ_ENABLE
     {
-        double result_iozl_1;
-        double result_iozh_1;
+        //double result_iozl_1;
+        //double result_iozh_1;
 
         SETUP();
 
