@@ -43,24 +43,43 @@
 #define SFDR_FREQ_DIV  383         /* 50MHz/383≈130.5kHz, 1020Hz 对齐 bin16 */
 #define SFDR_NAVG      4           /* 测量平均次数 */
 
-/* ==================== IMD 参数 (Loop Around Measurement) ==================== */
-/*更改频率为390.625Hz和3320.3125Hz，保证频点对齐FFT bin，避免频谱泄漏
+/* ==================== IMD 参数 (Loop Around Measurement) ====================
+   AS 波形 1024 点，FFT 2048 点，每音 -10 dBm0
+   选择频率需满足: f / (Fs_AS/1024) = 整数 → AS 循环不跳变
+                  f / (Fs_DVM/2048) = 整数 → FFT bin 对齐
+   ------------------------------------------------------------
+   方案 A: f1=390.625, f2=3320.313  Fs_AS=100k    Fs_DVM=100k    FREQ_DIV=500
+   方案 B: f1=366.211, f2=3295.898  Fs_AS=125k    Fs_DVM=62.5k   FREQ_DIV=800  [当前]
+   方案 C: f1=305.176, f2=3356.934  Fs_AS=156.25k Fs_DVM=78.125k FREQ_DIV=640 */
+
+/* ===== 方案 A (改最少, Fs=100kHz, Δf≈48.8Hz) =====
 #define IMD_F1                390.625
-#define IMD_F2                3320.3125
-#define IMD_FREQ_DIV          500        
+#define IMD_F2                3320.313
+#define IMD_AS_SAMPLE_RATE    100000.0
+#define IMD_FREQ_DIV          500
 */
 
-#define IMD_F1                300.0
-#define IMD_F2                3400.0
-#define IMD_TEST_LEVEL_DBM    (-10.0)//-10dbm0
-#define IMD_V_SINGLE_RMS       (1.2276 * pow(10.0, IMD_TEST_LEVEL_DBM / 20.0))//电压幅值 = 1.2276 × 10^(IMD_TEST_LEVEL_DBM / 20)
-#define IMD_V_SINGLE_PEAK     (IMD_V_SINGLE_RMS * 1.41421356)  /* RMS → 峰值 */
+/* ===== 方案 B (当前: Fs=125kHz/62.5kHz, Δf≈30.5Hz, bin 最密) ===== */
+#define IMD_F1                366.211
+#define IMD_F2                3295.898
+#define IMD_AS_SAMPLE_RATE    125000.0
+#define IMD_FREQ_DIV          800         /* 50MHz/800=62.5kHz, Δf=62.5k/2048≈30.5Hz */
+
+/* ===== 方案 C (覆盖最全, Fs=156.25kHz/78.125kHz, f1/f2 最贴近 300/3400) =====
+#define IMD_F1                305.176
+#define IMD_F2                3356.934
+#define IMD_AS_SAMPLE_RATE    156250.0
+#define IMD_FREQ_DIV          640
+*/
+
+#define IMD_TEST_LEVEL_DBM    (-10.0)      /* -10 dBm0, 在 datasheet -4~-21 dBm0 范围内 */
+#define IMD_V_SINGLE_RMS       (1.2276 * pow(10.0, IMD_TEST_LEVEL_DBM / 20.0)) /* 每音 RMS = 0.388 Vrms */
+#define IMD_V_SINGLE_PEAK     (IMD_V_SINGLE_RMS * 1.41421356)  /* 每音峰值 = 0.549 V */
+#define IMD_AS_FULL_SCALE      2.0         /* AS DAC 满量程 (V), > 双音最坏峰值 1.098V */
 #define IMD_AS_POINTS         1024
-#define IMD_AS_SAMPLE_RATE    100000.0
-#define IMD_AS_FREQ_DIV       ((int)(100e6 / IMD_AS_SAMPLE_RATE))  /* 100MHz 主频, =1000 */
+#define IMD_AS_FREQ_DIV       ((int)(100e6 / IMD_AS_SAMPLE_RATE))  /* = 800 */
 #define IMD_FFT_POINTS        2048        /* FFT 点数（2的幂），DVM 采样点数 */
-#define IMD_FREQ_DIV          488         /* 50MHz/488≈102.5kHz, Δf≈50Hz, 4频点对齐bin */
-#define IMD_NAVG              4           /* 测量平均次数 */
+#define IMD_NAVG              1           /* 测量平均次数 */
 
 /* ==================== 全局变量（跨测试共享） ==================== */
 extern double gxa1020;   /* GXA 测得的 1020Hz 参考增益，供 GXR 使用 */
@@ -1101,11 +1120,11 @@ grrl = Gabs - gra1020_local
 
     /* ================================================================
        Test 12: IMD — 互调失真测试 (Loop Around Measurement)
-       生成 300Hz+3400Hz 双音 → AS 播放 → [TX] → DX→DR(relay7环回) → [RX]
-       → DVM 采样 VFR+ 2048 点 × 4 次 → DFT 平均 → 4 分量(f1,f2,sum,diff)
+       生成 366.211Hz+3295.898Hz 双音 → AS 播放 → VFX+ → DX→DR(relay7环回) → VFRO
+       → DVM 采样 VFR+ 2048 点 × 1 次 → DFT → 4 分量(f1,f2,sum,diff)
        IMD = 20*log10(max(A_sum,A_diff)/max(A_f1,A_f2))
        限值：≤ -41dB
-       FFT: FREQ_DIV=488, Fs≈102459Hz, N=2048, Δf≈50.03Hz
+       FFT: FREQ_DIV=800, Fs=62500Hz, N=2048, Δf≈30.5Hz
 
        单音 -10dbm0
        IMD_V_SINGLE_PEAK=0.549v
@@ -1140,15 +1159,16 @@ grrl = Gabs - gra1020_local
         CLOSE_RELAY("1,7");//继电器1闭合 VFRO接DVM1，继电器7闭合 TX→RX环回
         Delay(10);
 
-        /* 2. 生成双音波形 (300Hz + 3400Hz) */
+        /* 2. 生成双音波形 (366.211Hz + 3295.898Hz) */
         for (i = 0; i < IMD_AS_POINTS; i++) {
             t = (double)i / IMD_AS_SAMPLE_RATE;//时间=当前采样点数/采样率
             v = IMD_V_SINGLE_PEAK * (sin(2.0 * M_PI * IMD_F1 * t)
                                    + sin(2.0 * M_PI * IMD_F2 * t));//imd的峰值电压*(f1的分量+f2的分量)
-            if (v > 10.0)  v = 10.0;//限幅保护 假设幅度为10v 防止超出DAC的范围
-            if (v < -10.0) v = -10.0;
-            as_waveform[i] = (WORD)(((v / 10.0) + 1.0) / 2.0 * 65535.0 + 0.5);//(((瞬时电压 / 满量程)归一到+—1 + 1.0偏移到[0-2]) / 2.0缩放到[0-1] * 65535.0映射到DAC满量程0-65535 + 0.5四舍五入)
-        //把瞬时电压值映射到DAC的整数值范围0-65535，作为AS的波形数据
+            if (v > IMD_AS_FULL_SCALE)  v = IMD_AS_FULL_SCALE;//限幅保护，双音最大峰值1.098V，远小于满量程
+            if (v < -IMD_AS_FULL_SCALE) v = -IMD_AS_FULL_SCALE;
+            as_waveform[i] = (WORD)(((v / IMD_AS_FULL_SCALE) + 1.0) / 2.0 * 65535.0 + 0.5);
+            // (瞬时电压/满量程 → [-1,+1], +1→[0,2], /2→[0,1], ×65535→DAC码)
+            //DAC码最大=65535，最小=0
         }
 
         /* 3. 加载波形到音频源 */
@@ -1160,9 +1180,13 @@ grrl = Gabs - gra1020_local
         }
 
         /* 5. 多次测量，累加幅度谱 */
-        for (run = 0; run < IMD_NAVG; run++) {
-            RUN_AS_PATTERN(7, 1, IMD_AS_FREQ_DIV, 10);//段7，索引1，采样频率=100MHz/IMD_AS_FREQ_DIV，double fVol音频源电压值 输入范围：10V.
-            RUN_PATTERN(13, 0, 0, 0);
+        for (run = 0; run < IMD_NAVG; run++) {//先将四次测量改为1次
+            RUN_AS_PATTERN(7, 1, IMD_AS_FREQ_DIV, IMD_AS_FULL_SCALE);//段7，bank1，f=100MHz/IMD_AS_FREQ_DIV，fVol=满量程峰值电压IMD_AS_FULL_SCALE
+            if (!RUN_PATTERN(13, 0, 0, 0)) {
+                DO_BIN(32);                        /* IMD: 图形13运行失败 */
+                SHOW_RESULT("IMD_PAT_FAIL", 1, "", 1, 0);
+                goto END_IMD;
+            }
             Delay(5);
 
             MAT_DVM_MEASURE(1, 2.0, V, 10, IMD_FFT_POINTS, IMD_FREQ_DIV, voltage);
@@ -1205,16 +1229,16 @@ grrl = Gabs - gra1020_local
         A_sum  = fft_mag[bin_sum];
         A_diff = fft_mag[bin_diff];
 
-        A_imd  = (A_sum > A_diff) ? A_sum : A_diff;
-        A_fund = (A_f1 > A_f2) ? A_f1 : A_f2;
+        A_imd  = (A_sum > A_diff) ? A_sum : A_diff;//取较大互调
+        A_fund = (A_f1 > A_f2) ? A_f1 : A_f2;//取较大基波
 
-        if (A_fund <= 0.0) {
+        if (A_fund <= 0.0) {//基波幅度为零，无法计算 IMD
             DO_BIN(25);
             SHOW_RESULT("IMD_FUND_LOST", 1, "", 1, 0);
             goto END_IMD;
         }
 
-        IMD_db = 20.0 * log10(A_imd / A_fund);
+        IMD_db = 20.0 * log10(A_imd / A_fund);//计算互调失真，单位dB
 
         SHOW_RESULT("IMD", IMD_db, "dB", -41.0, No_LoLimit);
         if (IMD_db > -41.0) {
