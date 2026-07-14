@@ -52,9 +52,9 @@
 
 #define IMD_F1                300.0
 #define IMD_F2                3400.0
-#define IMD_TEST_LEVEL_DBM   (-10.0)
-#define IMD_V_TOTAL_RMS       (1.2276 * pow(10.0, IMD_TEST_LEVEL_DBM / 20.0))
-#define IMD_V_SINGLE_PEAK     IMD_V_TOTAL_RMS
+#define IMD_TEST_LEVEL_DBM    (-10.0)//-10dbm0
+#define IMD_V_SINGLE_RMS       (1.2276 * pow(10.0, IMD_TEST_LEVEL_DBM / 20.0))//电压幅值 = 1.2276 × 10^(IMD_TEST_LEVEL_DBM / 20)
+#define IMD_V_SINGLE_PEAK     (IMD_V_SINGLE_RMS * 1.41421356)  /* RMS → 峰值 */
 #define IMD_AS_POINTS         1024
 #define IMD_AS_SAMPLE_RATE    100000.0
 #define IMD_AS_FREQ_DIV       ((int)(100e6 / IMD_AS_SAMPLE_RATE))  /* 100MHz 主频, =1000 */
@@ -1026,6 +1026,7 @@ grrl = Gabs - gra1020_local
 
         /* 1. 初始化 */
         SETUP();
+        CLOSE_RELAY("1");//继电器1闭合 VFRO接DVM1
 
         /* 2. 清零累加数组 */
         for (i = 0; i < SFDR_FFT_POINTS / 2; i++) {
@@ -1092,6 +1093,7 @@ grrl = Gabs - gra1020_local
         }
 
     END_SFDR:
+        CLEAR_RELAY("1");
         DPS_OFF(DPS1);
         DPS_OFF(DPS2);
     }
@@ -1104,6 +1106,9 @@ grrl = Gabs - gra1020_local
        IMD = 20*log10(max(A_sum,A_diff)/max(A_f1,A_f2))
        限值：≤ -41dB
        FFT: FREQ_DIV=488, Fs≈102459Hz, N=2048, Δf≈50.03Hz
+
+       单音 -10dbm0
+       IMD_V_SINGLE_PEAK=0.549v
        ================================================================ */
 #if TEST_IMD_ENABLE
     {
@@ -1132,17 +1137,18 @@ grrl = Gabs - gra1020_local
 
         /* 1. 初始化 + 闭合环回继电器 */
         SETUP();
-        CLOSE_RELAY("7");
+        CLOSE_RELAY("1,7");//继电器1闭合 VFRO接DVM1，继电器7闭合 TX→RX环回
         Delay(10);
 
         /* 2. 生成双音波形 (300Hz + 3400Hz) */
         for (i = 0; i < IMD_AS_POINTS; i++) {
-            t = (double)i / IMD_AS_SAMPLE_RATE;
+            t = (double)i / IMD_AS_SAMPLE_RATE;//时间=当前采样点数/采样率
             v = IMD_V_SINGLE_PEAK * (sin(2.0 * M_PI * IMD_F1 * t)
-                                   + sin(2.0 * M_PI * IMD_F2 * t));
-            if (v > 10.0)  v = 10.0;
+                                   + sin(2.0 * M_PI * IMD_F2 * t));//imd的峰值电压*(f1的分量+f2的分量)
+            if (v > 10.0)  v = 10.0;//限幅保护 假设幅度为10v 防止超出DAC的范围
             if (v < -10.0) v = -10.0;
-            as_waveform[i] = (WORD)(((v / 10.0) + 1.0) / 2.0 * 65535.0 + 0.5);
+            as_waveform[i] = (WORD)(((v / 10.0) + 1.0) / 2.0 * 65535.0 + 0.5);//(((瞬时电压 / 满量程)归一到+—1 + 1.0偏移到[0-2]) / 2.0缩放到[0-1] * 65535.0映射到DAC满量程0-65535 + 0.5四舍五入)
+        //把瞬时电压值映射到DAC的整数值范围0-65535，作为AS的波形数据
         }
 
         /* 3. 加载波形到音频源 */
@@ -1155,7 +1161,7 @@ grrl = Gabs - gra1020_local
 
         /* 5. 多次测量，累加幅度谱 */
         for (run = 0; run < IMD_NAVG; run++) {
-            RUN_AS_PATTERN(7, 1, IMD_AS_FREQ_DIV, 10);
+            RUN_AS_PATTERN(7, 1, IMD_AS_FREQ_DIV, 10);//段7，索引1，采样频率=100MHz/IMD_AS_FREQ_DIV，double fVol音频源电压值 输入范围：10V.
             RUN_PATTERN(13, 0, 0, 0);
             Delay(5);
 
@@ -1218,7 +1224,7 @@ grrl = Gabs - gra1020_local
         }
 
     END_IMD:
-        CLEAR_RELAY("7");
+        CLEAR_RELAY("1,7");
         DPS_OFF(DPS1);
         DPS_OFF(DPS2);
     }
