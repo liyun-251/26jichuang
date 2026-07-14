@@ -1,0 +1,18 @@
+//CLK波形RZ，2.048MHz，T=0.488us=488ns
+//最小位时钟周期BCLKX Tmin=485ns
+//FSR=FSX=8kHz
+//除特别注释外，波形和时间如上所示
+0 直流功能测试-测dbm0和max overload
+1 IIL拉高输入
+2 IIH拉低输入引脚
+3 上电取消DX高阻态
+4 上电，但DX高阻态
+5 掉电
+6 工作状态，用于测IBBICC
+7 抓取PCM通用
+8 300Hz 0dBm0 PCM输入
+9 1020Hz -40dBm0 PCM输入
+10 1020Hz 0dBm0 PCM输入
+11 1020Hz 3dBm0 PCM输入
+12 3000Hz 0dBm0 PCM输入
+13 回环测试-交流功能测试
