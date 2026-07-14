@@ -119,9 +119,9 @@
 #define IMD_NAVG              1           /* 测量平均次数 */
 
 /* ==================== 全局变量（跨测试共享） ==================== */
-extern double gxa1020;   /* GXA 测得的 1020Hz 参考增益，供 GXR 使用 */
-extern double gra1020;   /* GRA 测得的 1020Hz 参考增益，供 GRR/GRRL 使用 */
-extern double vra_ref;   /* GRA 测得的参考电压，供 GRR/GRRL 使用 */
+double gxa1020;   /* GXA 测得的 1020Hz 参考增益，供 GXR 使用 */
+double gra1020;   /* GRA 测得的 1020Hz 参考增益，供 GRR/GRRL 使用 */
+double vra_ref;   /* GRA 测得的参考电压，供 GRR/GRRL 使用 */
 
 /* ==================== 公共函数声明 ==================== */
 
