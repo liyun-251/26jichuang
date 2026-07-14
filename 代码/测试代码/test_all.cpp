@@ -593,7 +593,7 @@ void PASCAL TP3057()
 
 
         RUN_PATTERN(5, 1, 0, 0);//进入掉电
-        Delay(50);
+        Delay(5);
 
         fail = 0;
 
