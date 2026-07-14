@@ -11,10 +11,47 @@
    各测试项采用 { } 块作用域，变量互不冲突。
    与原 test_01~test_12 中各独立 TP3057() 函数等价整合。
 
-   BIN 编号说明（已消除原独立文件中的重复编号）：
-     原 test_08 GXA_CAP_FAIL  BIN(7) → 27
-     原 test_08 GXA           BIN(8) → 28
-     原 test_11 SFDR_PAT_FAIL BIN(18)→ 31
+   BIN 编号对照表（已消除原独立文件重复编号，按测试流程排序）：
+   ──────────────────────────────────────────────────────────────────
+   测试项       BIN   故障原因                 备注
+   ──────────────────────────────────────────────────────────────────
+   CON-TEST      1    二极管正向压降异常        VFXI+/VFRO/PWRO+/
+                                               PWRO- 对地导通测试
+   IIL           2    输入低电平漏电超限        >|±10|μA
+   IIH           3    输入高电平漏电超限        >|±10|μA
+   IOZ           4    DX 对地漏电超限          IOZL >|±10|μA
+   IOZ           5    DX 对 VCC 漏电超限       IOZH >|±10|μA
+   ICC0IBB0      6    掉电电流超限              ICC0>1.5mA 或
+                                                IBB0>0.3mA
+   ICC1IBB1      7    ICC1 超限                VCC 工作电流>9mA
+   ICC1IBB1      8    IBB1 超限                VBB 工作电流>9mA
+   FUNC-TEST    10    回环增益超限              |loopback_gain|>0.3225dB
+   GRA          11    接收绝对增益超限          |GRA|>0.15dB
+   GRR          12    接收频响超限              |ΔG|>0.15dB
+   GRRL         13    接收电平响应超限           |ΔG|>0.2dB
+   SFDX         14    PCM 捕获失败              捕获字节数不足
+   SFDX         15    DFT 计算失败              DFT() 返回 FALSE
+   SFDX         16    谐波 bin 越界              2次/3次谐波超出范围
+   SFDX         17    基波丢失                  SFDX_db ≥ 0.9
+   SFDX         18    失真超限                  SFDX_db > -46dB
+   SFDR         31    图形 10 运行失败           [原 BIN(18)] 复用,
+                                                RUN_PATTERN(10) 失败
+   SFDR         19    DFT 计算失败              DFT() 返回 FALSE
+   SFDR         20    谐波 bin 越界              2次/3次谐波超出范围
+   SFDR         21    基波丢失                  SFDR_db ≥ 0.9
+   SFDR         22    失真超限                  SFDR_db > -46dB
+   IMD          32    图形 13 运行失败           RUN_PATTERN(13) 失败
+   IMD          23    DFT 计算失败              DFT() 返回 FALSE
+   IMD          24    分量 bin 越界              四个频率分量
+                                                任一超出 FFT 范围
+   IMD          25    基波丢失                  A_fund ≤ 0
+   IMD          26    IMD 超限                  IMD_db > -41dB
+   GXA          27    PCM 捕获失败               [原 BIN(7)]
+   GXA          28    发送绝对增益超限           [原 BIN(8)],
+                                                |GXA|>0.15dB
+   GXR          29    PCM 捕获失败               —
+   GXR          30    发送频响超限               —
+   ──────────────────────────────────────────────────────────────────
 
    测试开关：修改下方对应宏为 0 可跳过对应测试项
    ============================================================ */
@@ -495,6 +532,7 @@ void PASCAL TP3057()
 
         if (backloop_db < -0.3225 || backloop_db > 0.3225) {
             SHOW_RESULT("FUNC_FAIL", backloop_db, "dB", 0.3225, -0.3225);
+            DO_BIN(10);
         }
         else {
             SHOW_RESULT("FUNC_PASS", backloop_db, "dB", 0.3225, -0.3225);
