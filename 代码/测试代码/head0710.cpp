@@ -28,7 +28,7 @@
 #define SFDX_SAMPLE_RATE      8000.0      /* PCM 采样率 (Hz) */
 
 /* ==================== SFDR 参数 ==================== */
-#define SFDR_FFT_POINTS       2048        /* FFT 点数（2的幂） */
+#define SFDR_FFT_POINTS       512         /* FFT 点数（2的幂） */
 #define SFDR_DVM_SR           100000.0    /* DVM 采样率 (Hz) */
 #define SFDR_FREQ_RES         (SFDR_DVM_SR / SFDR_FFT_POINTS)
 
